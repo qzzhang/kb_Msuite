@@ -12,6 +12,7 @@ eval {
     $get_time = sub { Time::HiRes::gettimeofday() };
 };
 
+use Bio::KBase::AuthToken;
 
 # Client version should match Impl version
 # This is a Semantic Version number,
@@ -26,6 +27,15 @@ kb_Msuite::kb_MsuiteClient
 
 
 A KBase module: kb_Msuite
+This SDK module is developed to wrap the open source package CheckM which consists of a set of tools 
+for assessing the quality of genomes recovered from isolates, single cells, or metagenomes. 
+CheckM consists of a series of commands in order to support a number of different analyses and workflows.
+
+References: 
+CheckM in github: http://ecogenomics.github.io/CheckM/
+CheckM docs: https://github.com/Ecogenomics/CheckM/wiki
+
+Parks DH, Imelfort M, Skennerton CT, Hugenholtz P, Tyson GW. 2015. CheckM: assessing the quality of microbial genomes recovered from isolates, single cells, and metagenomes. Genome Research, 25: 1043–1055.
 
 
 =cut
@@ -74,6 +84,27 @@ sub new
 	push(@{$self->{headers}}, 'Kbrpc-Errordest', $self->{kbrpc_error_dest});
     }
 
+    #
+    # This module requires authentication.
+    #
+    # We create an auth token, passing through the arguments that we were (hopefully) given.
+
+    {
+	my %arg_hash2 = @args;
+	if (exists $arg_hash2{"token"}) {
+	    $self->{token} = $arg_hash2{"token"};
+	} elsif (exists $arg_hash2{"user_id"}) {
+	    my $token = Bio::KBase::AuthToken->new(@args);
+	    if (!$token->error_message) {
+	        $self->{token} = $token->token;
+	    }
+	}
+	
+	if (exists $self->{token})
+	{
+	    $self->{client}->{token} = $self->{token};
+	}
+    }
 
     my $ua = $self->{client}->ua;	 
     my $timeout = $ENV{CDMI_TIMEOUT} || (30 * 60);	 
@@ -84,6 +115,124 @@ sub new
 }
 
 
+
+
+=head2 run_checkM
+
+  $returnVal = $obj->run_checkM($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a kb_Msuite.CheckMInputParams
+$returnVal is a kb_Msuite.CheckMResults
+CheckMInputParams is a reference to a hash where the following keys are defined:
+	checkM_workflow_name has a value which is a string
+	putative_genomes_folder has a value which is a string
+	file_extension has a value which is a string
+	workspace_name has a value which is a string
+	thread has a value which is an int
+	external_genes has a value which is a kb_Msuite.boolean
+	external_genes_file has a value which is a string
+	reassembly has a value which is a kb_Msuite.boolean
+	prob_threshold has a value which is a float
+	markerset has a value which is an int
+	min_contig_length has a value which is an int
+	plotmarker has a value which is a kb_Msuite.boolean
+boolean is an int
+CheckMResults is a reference to a hash where the following keys are defined:
+	checkM_results_folder has a value which is a string
+	report_name has a value which is a string
+	report_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a kb_Msuite.CheckMInputParams
+$returnVal is a kb_Msuite.CheckMResults
+CheckMInputParams is a reference to a hash where the following keys are defined:
+	checkM_workflow_name has a value which is a string
+	putative_genomes_folder has a value which is a string
+	file_extension has a value which is a string
+	workspace_name has a value which is a string
+	thread has a value which is an int
+	external_genes has a value which is a kb_Msuite.boolean
+	external_genes_file has a value which is a string
+	reassembly has a value which is a kb_Msuite.boolean
+	prob_threshold has a value which is a float
+	markerset has a value which is an int
+	min_contig_length has a value which is an int
+	plotmarker has a value which is a kb_Msuite.boolean
+boolean is an int
+CheckMResults is a reference to a hash where the following keys are defined:
+	checkM_results_folder has a value which is a string
+	report_name has a value which is a string
+	report_ref has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub run_checkM
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function run_checkM (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to run_checkM:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'run_checkM');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_Msuite.run_checkM",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'run_checkM',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method run_checkM",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'run_checkM',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -119,7 +268,7 @@ sub status
 sub version {
     my ($self) = @_;
     my $result = $self->{client}->call($self->{url}, $self->{headers}, {
-        method => "${last_module.module_name}.version",
+        method => "kb_Msuite.version",
         params => [],
     });
     if ($result) {
@@ -127,16 +276,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => '${last_method.name}',
+                method_name => 'run_checkM',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method ${last_method.name}",
+            error => "Error invoking method run_checkM",
             status_line => $self->{client}->status_line,
-            method_name => '${last_method.name}',
+            method_name => 'run_checkM',
         );
     }
 }
@@ -170,6 +319,187 @@ sub _validate_version {
 }
 
 =head1 TYPES
+
+
+
+=head2 boolean
+
+=over 4
+
+
+
+=item Description
+
+A boolean - 0 for false, 1 for true.
+    @range (0, 1)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+an int
+</pre>
+
+=end html
+
+=begin text
+
+an int
+
+=end text
+
+=back
+
+
+
+=head2 FASTA_format
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a string
+</pre>
+
+=end html
+
+=begin text
+
+a string
+
+=end text
+
+=back
+
+
+
+=head2 CheckMInputParams
+
+=over 4
+
+
+
+=item Description
+
+required params:
+putative_genomes_folder: folder path that holds all putative genome files with (fa as the file extension) to be checkM-ed
+checkM_workflow_name: name of the CheckM workflow,e.g., lineage_wf or taxonomy_wf
+file_extension: the extension of the putative genome file, should be "fna"
+
+contig_file: contig file path/shock_id in File structure
+out_header: output file header
+workspace_name: the name of the workspace it gets saved to.
+
+semi-required: at least one of the following parameters is needed
+abund_list: contig abundance file(s)/shock_id(s)
+reads_list: reads file(s)/shock_id(s) in fasta or fastq format
+
+optional params:
+thread: number of threads; default 1
+external_genes: indicating an external gene call instead of using prodigal, default 0
+external_genes_file: the file containing genes for gene call, default "" 
+
+reassembly: specify this option if you want to reassemble the bins.
+            note that at least one reads file needs to be designated.
+prob_threshold: minimum probability for EM algorithm; default 0.8
+markerset: choose between 107 marker genes by default or 40 marker genes
+min_contig_length: minimum contig length; default 1000
+plotmarker: specify this option if you want to plot the markers in each contig
+
+ref: https://github.com/Ecogenomics/CheckM/wiki/Installation#how-to-install-checkm
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+checkM_workflow_name has a value which is a string
+putative_genomes_folder has a value which is a string
+file_extension has a value which is a string
+workspace_name has a value which is a string
+thread has a value which is an int
+external_genes has a value which is a kb_Msuite.boolean
+external_genes_file has a value which is a string
+reassembly has a value which is a kb_Msuite.boolean
+prob_threshold has a value which is a float
+markerset has a value which is an int
+min_contig_length has a value which is an int
+plotmarker has a value which is a kb_Msuite.boolean
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+checkM_workflow_name has a value which is a string
+putative_genomes_folder has a value which is a string
+file_extension has a value which is a string
+workspace_name has a value which is a string
+thread has a value which is an int
+external_genes has a value which is a kb_Msuite.boolean
+external_genes_file has a value which is a string
+reassembly has a value which is a kb_Msuite.boolean
+prob_threshold has a value which is a float
+markerset has a value which is an int
+min_contig_length has a value which is an int
+plotmarker has a value which is a kb_Msuite.boolean
+
+
+=end text
+
+=back
+
+
+
+=head2 CheckMResults
+
+=over 4
+
+
+
+=item Description
+
+checkM_results_folder: folder path that stores the CheckM results
+report_name: report name generated by KBaseReport
+report_ref: report reference generated by KBaseReport
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+checkM_results_folder has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+checkM_results_folder has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
+
+
+=end text
+
+=back
 
 
 

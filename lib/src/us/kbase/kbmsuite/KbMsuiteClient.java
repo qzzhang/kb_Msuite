@@ -11,11 +11,19 @@ import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonClientCaller;
 import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.RpcContext;
+import us.kbase.common.service.UnauthorizedException;
 
 /**
  * <p>Original spec-file module name: kb_Msuite</p>
  * <pre>
  * A KBase module: kb_Msuite
+ * This SDK module is developed to wrap the open source package CheckM which consists of a set of tools 
+ * for assessing the quality of genomes recovered from isolates, single cells, or metagenomes. 
+ * CheckM consists of a series of commands in order to support a number of different analyses and workflows.
+ * References: 
+ * CheckM in github: http://ecogenomics.github.io/CheckM/
+ * CheckM docs: https://github.com/Ecogenomics/CheckM/wiki
+ * Parks DH, Imelfort M, Skennerton CT, Hugenholtz P, Tyson GW. 2015. CheckM: assessing the quality of microbial genomes recovered from isolates, single cells, and metagenomes. Genome Research, 25: 1043–1055.
  * </pre>
  */
 public class KbMsuiteClient {
@@ -28,6 +36,49 @@ public class KbMsuiteClient {
      */
     public KbMsuiteClient(URL url) {
         caller = new JsonClientCaller(url);
+    }
+    /** Constructs a client with a custom URL.
+     * @param url the URL of the service.
+     * @param token the user's authorization token.
+     * @throws UnauthorizedException if the token is not valid.
+     * @throws IOException if an IOException occurs when checking the token's
+     * validity.
+     */
+    public KbMsuiteClient(URL url, AuthToken token) throws UnauthorizedException, IOException {
+        caller = new JsonClientCaller(url, token);
+    }
+
+    /** Constructs a client with a custom URL.
+     * @param url the URL of the service.
+     * @param user the user name.
+     * @param password the password for the user name.
+     * @throws UnauthorizedException if the credentials are not valid.
+     * @throws IOException if an IOException occurs when checking the user's
+     * credentials.
+     */
+    public KbMsuiteClient(URL url, String user, String password) throws UnauthorizedException, IOException {
+        caller = new JsonClientCaller(url, user, password);
+    }
+
+    /** Constructs a client with a custom URL
+     * and a custom authorization service URL.
+     * @param url the URL of the service.
+     * @param user the user name.
+     * @param password the password for the user name.
+     * @param auth the URL of the authorization server.
+     * @throws UnauthorizedException if the credentials are not valid.
+     * @throws IOException if an IOException occurs when checking the user's
+     * credentials.
+     */
+    public KbMsuiteClient(URL url, String user, String password, URL auth) throws UnauthorizedException, IOException {
+        caller = new JsonClientCaller(url, user, password, auth);
+    }
+
+    /** Get the token this client uses to communicate with the server.
+     * @return the authorization token.
+     */
+    public AuthToken getToken() {
+        return caller.getToken();
     }
 
     /** Get the URL of the service with which this client communicates.
@@ -116,6 +167,23 @@ public class KbMsuiteClient {
 
     public void setServiceVersion(String newValue) {
         this.serviceVersion = newValue;
+    }
+
+    /**
+     * <p>Original spec-file function name: run_checkM</p>
+     * <pre>
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbmsuite.CheckMInputParams CheckMInputParams}
+     * @return   parameter "returnVal" of type {@link us.kbase.kbmsuite.CheckMResults CheckMResults}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public CheckMResults runCheckM(CheckMInputParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<CheckMResults>> retType = new TypeReference<List<CheckMResults>>() {};
+        List<CheckMResults> res = caller.jsonrpcCall("kb_Msuite.run_checkM", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
     }
 
     public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {

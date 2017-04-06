@@ -17,6 +17,15 @@ elif [ "${1}" = "async" ] ; then
   sh ./scripts/run_async.sh
 elif [ "${1}" = "init" ] ; then
   echo "Initialize module"
+  cd /data
+  curl -s https://data.ace.uq.edu.au/public/CheckM_databases/checkm_data_v1.0.7.tar.gz|tar xzf -
+  ln -s checkm_data_v1.0.7 checkm_data
+  if [ -d checkm_data ] ; then
+        checkm data setRoot checkm_data
+        touch __READY__
+  else
+    echo "Init failed"
+  fi
 elif [ "${1}" = "bash" ] ; then
   bash
 elif [ "${1}" = "report" ] ; then

@@ -72,27 +72,31 @@ RUN pip install cffi --upgrade \
 
 # Install HMMER
 WORKDIR /kb/module
-RUN \
-  curl http://eddylab.org/software/hmmer3/3.1b2/hmmer-3.1b2-linux-intel-x86_64.tar.gz > hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
-  tar xfz hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
-  ln -s hmmer-3.1b2-linux-intel-x86_64 hmmer && \
-  rm -f hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
-  cd hmmer && \
-  ./configure && \
-  make
+#RUN \
+  #curl http://eddylab.org/software/hmmer3/3.1b2/hmmer-3.1b2-linux-intel-x86_64.tar.gz > hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
+  #tar xvf hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
+  #ln -s hmmer-3.1b2-linux-intel-x86_64 hmmer && \
+  #rm -f hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
+  #cd hmmer && \
+  #./configure && \
+  #make
 
 # Install Prodigal
 WORKDIR /kb/module
 RUN \
-  git clone https://github.com/hyattpd/Prodigal && \
-  make install
+  curl -s https://github.com/hyattpd/Prodigal/releases/download/v2.6.3/prodigal.linux > prodigal
 
 # Install Pplacer
 WORKDIR /kb/module
 RUN \
-  git clone https://github.com/matsen/pplacer && \
-  cat opam-requirements.txt | xargs opam install -y && \
-  make all
+  curl -s https://github.com/matsen/pplacer/releases/download/v.1.1.alpha19/pplacer-linux-v1.1.alpha19.zip > pplacer-linux-v1.1.alpha19.zip && \
+  tar xvf pplacer-linux-v1.1.alpha19.zip && \
+  ln -s pplacer-Linux-1.1.alpha19 pplacer && \
+  rm -f pplacer-linux-1.1.alpha19.zip  && \
+  cd pplacer
+  #git clone https://github.com/matsen/pplacer && \
+  #cat opam-requirements.txt | xargs opam install -y && \
+  #make all
 
 # Install numpy, etc. (probably not necessary)
 #WORKDIR /kb/module
@@ -111,6 +115,8 @@ RUN \
 
 
 # TODO: install data to mount
+RUN mkdir /data && \
+    mkdir /data/checkm_data
 # TODO: set data root
 
 
