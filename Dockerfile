@@ -6,11 +6,7 @@ MAINTAINER KBase Developer
 # install line here, a git checkout to download code, or run any other
 # installation scripts.
 
-RUN apt-get install software-properties-common
-RUN add-apt-repository ppa:avsm/ppa
 RUN apt-get update
-#RUN apt-get install ocaml ocaml-native-compilers camlp4-extra opam
-RUN apt-get install libgsl0-dev
 
 # Here we install a python coverage tool and an
 # https library that is out of date in the base image.
@@ -24,17 +20,6 @@ RUN pip install cffi --upgrade \
     && pip install pyasn1 --upgrade \
     && pip install requests --upgrade \
     && pip install 'requests[security]' --upgrade
-
-# install opam
-RUN wget https://raw.github.com/ocaml/opam/master/shell/opam_installer.sh -O - | sh -s /usr/local/bin
-RUN /usr/local/bin/opam init --comp 4.02.1 && \
-    opam switch 4.03.0
-RUN eval `opam config env` && opam update && \
-    opam depext conf-pkg-config.1.0 && \
-    opam install camlp4 ctypes ocp-indent ctypes-foreign ocamlfind
-RUN opam repo add pplacer-deps http://matsen.github.com/pplacer-opam-repository
-RUN opam update pplacer-deps
-
 
 ###### CheckM installation
 #  Directions from https://github.com/Ecogenomics/CheckM/wiki/Installation#how-to-install-checkm
@@ -102,14 +87,17 @@ RUN \
 
 # Install Pplacer
 WORKDIR /kb/module
-RUN \
-  curl -s https://codeload.github.com/matsen/pplacer/tar.gz/v1.1.alpha19 > pplacer-1.1.alpha19.tar.gz && \
-  tar -xvzf pplacer-1.1.alpha19.tar.gz && \
-  ln -s pplacer-1.1.alpha19 pplacer && \
-  rm -f pplacer-1.1.alpha19.tar  && \
-  cd pplacer && \
-  cat opam-requirements.txt | xargs opam install -y && \
-  make all
+# NOTE: The following block is replaced by adding the ./pplacer-linux-v1.1.alpha19.zip downloaded from
+# a link at https://github.com/matsen/pplacer/releases/download/v1.1.alpha19/pplacer-linux-v1.1.alpha19.zip, which, if accessed from curl, would be redirected and required password.
+#RUN \
+#  curl -s https://codeload.github.com/matsen/pplacer/tar.gz/v1.1.alpha19 > pplacer-1.1.alpha19.tar.gz && \
+#  tar -xvzf pplacer-1.1.alpha19.tar.gz && \
+#  ln -s pplacer-1.1.alpha19 pplacer && \
+#  rm -f pplacer-1.1.alpha19.tar  && \
+#  cd pplacer && \
+#  cat opam-requirements.txt | xargs opam install -y && \
+#  make all
+ADD ./pplacer-linux-v1.1.alpha19.zip /kb/module/ 
 
 # Install numpy, etc. (probably not necessary)
 #WORKDIR /kb/module
@@ -127,10 +115,9 @@ RUN \
   pip install checkm-genome
 
 
-# TODO: install data to mount
+# For required data to mount (handled in ENTRYPOINT)
 RUN mkdir /data && \
     mkdir /data/checkm_data
-# TODO: set data root
 
 
 # -----------------------------------------
