@@ -102,6 +102,7 @@ WORKDIR /kb/module
 RUN unzip pplacer-linux-v1.1.alpha19.zip && \
   rm -f pplacer-linux-v1.1.alpha19.zip && \
   rm -f pplacer-1.1.alpha19.tar.gz
+
 # Install numpy, etc. (probably not necessary)
 #WORKDIR /kb/module
 #RUN \
