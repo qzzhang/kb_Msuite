@@ -25,23 +25,13 @@ module kb_Msuite {
         putative_genomes_folder: folder path that holds all putative genome files with (fa as the file extension) to be checkM-ed
         checkM_workflow_name: name of the CheckM workflow,e.g., lineage_wf or taxonomy_wf
         file_extension: the extension of the putative genome file, should be "fna"
-
-        contig_file: contig file path/shock_id in File structure
-        out_header: output file header
         workspace_name: the name of the workspace it gets saved to.
-
-        semi-required: at least one of the following parameters is needed
-        abund_list: contig abundance file(s)/shock_id(s)
-        reads_list: reads file(s)/shock_id(s) in fasta or fastq format
 
         optional params:
         thread: number of threads; default 1
         external_genes: indicating an external gene call instead of using prodigal, default 0
         external_genes_file: the file containing genes for gene call, default "" 
 
-        reassembly: specify this option if you want to reassemble the bins.
-                    note that at least one reads file needs to be designated.
-        prob_threshold: minimum probability for EM algorithm; default 0.8
         markerset: choose between 107 marker genes by default or 40 marker genes
         min_contig_length: minimum contig length; default 1000
         plotmarker: specify this option if you want to plot the markers in each contig
@@ -49,16 +39,14 @@ module kb_Msuite {
         ref: https://github.com/Ecogenomics/CheckM/wiki/Installation#how-to-install-checkm
     */
     typedef structure {
-        string checkM_workflow_name;
-        string putative_genomes_folder;
-        string file_extension;
         string workspace_name;
+        string putative_genomes_folder;
+        string checkM_workflow_name;
+        string file_extension;
 
         int thread;
         boolean external_genes;
         string external_genes_file;
-        boolean reassembly;
-        float prob_threshold;
         int markerset;
         int min_contig_length;
         boolean plotmarker;

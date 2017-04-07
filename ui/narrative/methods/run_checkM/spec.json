@@ -1,7 +1,7 @@
 {
     "ver": "0.0.1",
     "authors": [
-        "dylan"
+        "dylan","qzhang"
     ],
     "contact": "",
     "categories": ["active"],
@@ -11,14 +11,36 @@
     },
     "parameters": [ 
         {
-            "id": "parameter_1",
-            "optional": true,
+            "id": "putative_genomes_folder",
+            "optional": false,
             "advanced": false,
             "allow_multiple": false,
-            "default_values": [ "" ],
+            "default_values": [ "." ],
             "field_type": "text",
             "text_options": {
-                "valid_ws_types": [ ]
+                "validate_as": "text"
+            }
+        },
+        {
+            "id": "checkM_workflow_name",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "lineage_wf" ],
+            "field_type": "text",
+            "text_options": {
+                "validate_as": "text"
+            }
+        },
+        {
+            "id": "file_extension",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "fna" ],
+            "field_type": "text",
+            "text_options": {
+                "validate_as": "text"
             }
         }
     ],
@@ -26,29 +48,49 @@
         "service-mapping": {
             "url": "",
             "name": "kb_Msuite",
-            "method": "your_method",
+            "method": "run_checkM",
             "input_mapping": [
                 {
                     "narrative_system_variable": "workspace",
-                    "target_argument_position": 0
+                    "target_property": "workspace_name"
                 },
                 {
-                    "input_parameter": "parameter_1",
-                    "target_argument_position": 1
+                    "input_parameter": "putative_genomes_folder",
+                    "target_property": "putative_genomes_folder"
+                },
+                {
+                    "input_parameter": "checkM_workflow_name",
+                    "target_property": "checkM_workflow_name"
+                },
+                {
+                    "input_parameter": "file_extension",
+                    "target_property": "file_extension" 
+                },
+                {
+                    "constant_value": 4,
+                    "target_property": "thread"
                 }
             ],
             "output_mapping": [
                 {
-                    "service_method_output_path": [0],
-                    "target_property": "output"
+                    "service_method_output_path": [0, "checkM_results_folder"],
+                    "target_property": "checkM_results_folder"
                 },
                 {
-                    "input_parameter": "parameter_1",
-                    "target_property": "input"
+                    "service_method_output_path": [0, "report_name"],
+                    "target_property": "report_name"
+                },
+                {
+                    "service_method_output_path": [0, "report_ref"],
+                    "target_property": "report_ref"
+                },
+                {
+                    "constant_value": "36",
+                    "target_property": "report_window_line_height"
                 },
                 {
                     "narrative_system_variable": "workspace",
-                    "target_property": "workspaceName"
+                    "target_property": "workspace_name"
                 }
             ]
         }
