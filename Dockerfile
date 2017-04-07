@@ -6,7 +6,11 @@ MAINTAINER KBase Developer
 # install line here, a git checkout to download code, or run any other
 # installation scripts.
 
+RUN apt-get install software-properties-common
+RUN add-apt-repository ppa:avsm/ppa
 RUN apt-get update
+#RUN apt-get install ocaml ocaml-native-compilers camlp4-extra opam
+RUN apt-get install libgsl0-dev
 
 # Here we install a python coverage tool and an
 # https library that is out of date in the base image.
@@ -21,6 +25,15 @@ RUN pip install cffi --upgrade \
     && pip install requests --upgrade \
     && pip install 'requests[security]' --upgrade
 
+# install opam
+RUN wget https://raw.github.com/ocaml/opam/master/shell/opam_installer.sh -O - | sh -s /usr/local/bin
+RUN /usr/local/bin/opam init --comp 4.02.1 && \
+    opam switch 4.03.0
+RUN eval `opam config env` && opam update && \
+    opam depext conf-pkg-config.1.0 && \
+    opam install camlp4 ctypes ocp-indent ctypes-foreign ocamlfind
+RUN opam repo add pplacer-deps http://matsen.github.com/pplacer-opam-repository
+RUN opam update pplacer-deps
 
 
 ###### CheckM installation
@@ -70,16 +83,17 @@ RUN pip install cffi --upgrade \
 #### OK, got that cleared up.  Now install CheckM, but not data
 #
 
+
 # Install HMMER
 WORKDIR /kb/module
-#RUN \
-  #curl http://eddylab.org/software/hmmer3/3.1b2/hmmer-3.1b2-linux-intel-x86_64.tar.gz > hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
-  #tar xvf hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
-  #ln -s hmmer-3.1b2-linux-intel-x86_64 hmmer && \
-  #rm -f hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
-  #cd hmmer && \
-  #./configure && \
-  #make
+RUN \
+  curl http://eddylab.org/software/hmmer3/3.1b2/hmmer-3.1b2-linux-intel-x86_64.tar.gz > hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
+  tar xvf hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
+  ln -s hmmer-3.1b2-linux-intel-x86_64 hmmer && \
+  rm -f hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
+  cd hmmer && \
+  ./configure && \
+  make
 
 # Install Prodigal
 WORKDIR /kb/module
@@ -89,14 +103,13 @@ RUN \
 # Install Pplacer
 WORKDIR /kb/module
 RUN \
-  curl -s https://github.com/matsen/pplacer/releases/download/v.1.1.alpha19/pplacer-linux-v1.1.alpha19.zip > pplacer-linux-v1.1.alpha19.zip && \
-  tar xvf pplacer-linux-v1.1.alpha19.zip && \
-  ln -s pplacer-Linux-1.1.alpha19 pplacer && \
-  rm -f pplacer-linux-1.1.alpha19.zip  && \
-  cd pplacer
-  #git clone https://github.com/matsen/pplacer && \
-  #cat opam-requirements.txt | xargs opam install -y && \
-  #make all
+  curl -s https://codeload.github.com/matsen/pplacer/tar.gz/v1.1.alpha19 > pplacer-1.1.alpha19.tar.gz && \
+  tar -xvzf pplacer-1.1.alpha19.tar.gz && \
+  ln -s pplacer-1.1.alpha19 pplacer && \
+  rm -f pplacer-1.1.alpha19.tar  && \
+  cd pplacer && \
+  cat opam-requirements.txt | xargs opam install -y && \
+  make all
 
 # Install numpy, etc. (probably not necessary)
 #WORKDIR /kb/module
