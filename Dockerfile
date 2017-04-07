@@ -86,7 +86,7 @@ RUN \
   curl -s https://github.com/hyattpd/Prodigal/releases/download/v2.6.3/prodigal.linux > prodigal
 
 # Install Pplacer
-WORKDIR /kb/module
+# WORKDIR /kb/module
 # NOTE: The following block is replaced by adding the ./pplacer-linux-v1.1.alpha19.zip downloaded from
 # a link at https://github.com/matsen/pplacer/releases/download/v1.1.alpha19/pplacer-linux-v1.1.alpha19.zip, which, if accessed from curl, would be redirected and required password.
 #RUN \
@@ -98,6 +98,8 @@ WORKDIR /kb/module
 #  cat opam-requirements.txt | xargs opam install -y && \
 #  make all
 ADD ./pplacer-linux-v1.1.alpha19.zip /kb/module/ 
+WORKDIR /kb/module
+RUN unzip pplacer-linux-v1.1.alpha19.zip
 
 # Install numpy, etc. (probably not necessary)
 #WORKDIR /kb/module
