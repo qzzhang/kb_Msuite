@@ -29,7 +29,7 @@ Parks DH, Imelfort M, Skennerton CT, Hugenholtz P, Tyson GW. 2015. CheckM: asses
     ######################################### noqa
     VERSION = "0.0.1"
     GIT_URL = "https://github.com/qzzhang/kb_Msuite"
-    GIT_COMMIT_HASH = "a2618cff04b389823fb6a223eb86f85d25aa33d6"
+    GIT_COMMIT_HASH = "425f4dc5423f7a6210d1d30738a09c59a5b015dd"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER

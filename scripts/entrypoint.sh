@@ -18,9 +18,8 @@ elif [ "${1}" = "async" ] ; then
 elif [ "${1}" = "init" ] ; then
   echo "Initialize module"
   cd /data
-  curl -s https://data.ace.uq.edu.au/public/CheckM_databases/checkm_data_v1.0.7.tar.gz|tar xzf -
-  ln -s checkm_data_v1.0.7 checkm_data
-  if [ -d checkm_data ] ; then
+  curl -s https://data.ace.uq.edu.au/public/CheckM_databases/checkm_data_v1.0.7.tar.gz|tar xzf - --directory checkm_data
+  if [ -d "checkm_data/genome_tree" ] ; then
         checkm data setRoot checkm_data
         touch __READY__
   else
