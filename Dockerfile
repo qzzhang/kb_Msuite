@@ -117,6 +117,12 @@ RUN unzip pplacer-linux-v1.1.alpha19.zip && \
 #  pip install dendropy
 #  pip install ScreamingBackpack
 
+# For checkm-genome required data
+RUN mkdir /data
+RUN chmod -R 777 /data
+RUN mkdir -p /data/checkm_data
+RUN chmod -R 777 /data/checkm_data
+
 # Install CheckM (collected packages: checkm-genome, pysam, dendropy, ScreamingBackpack)
 # Until seeing "Successfully installed ScreamingBackpack-0.2.333 checkm-genome-1.0.7 dendropy-4.2.0 pysam-0.10.0"
 WORKDIR /kb/module
@@ -125,15 +131,7 @@ RUN \
   && pip install dendropy \
   && pip install ScreamingBackpack \
   && pip install checkm-genome \
-  && ln -s checkm-genome-1.0.7 checkm-genome
-
-# For checkm-genome required data
-RUN \
-    mkdir /data && \
-    mkdir /data/checkm_data && \
-    checkm data setRoot /data/checkm_data && \
-    checkm data update
-
+  && ln -s checkm-genome-1.0.7 checkm-genome 
 
 # -----------------------------------------
 
