@@ -76,22 +76,30 @@ RUN pip install cffi --upgrade \
 WORKDIR /kb/module
 RUN \
   curl http://eddylab.org/software/hmmer3/3.1b2/hmmer-3.1b2-linux-intel-x86_64.tar.gz > hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
-  tar xvf hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
+  tar -zxvf hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
   ln -s hmmer-3.1b2-linux-intel-x86_64 hmmer && \
   rm -f hmmer-3.1b2-linux-intel-x86_64.tar.gz && \
   cd hmmer && \
   ./configure && \
-  make
+  make && make install && \
+  cd easel && make check && make install
+
 
 # Install Prodigal
 WORKDIR /kb/module
 RUN \
-  curl -s https://github.com/hyattpd/Prodigal/releases/download/v2.6.3/prodigal.linux > prodigal
+  wget https://github.com/hyattpd/Prodigal/archive/v2.6.3.tar.gz && \
+  tar -zxvf v2.6.3.tar.gz && \
+  ln -s Prodigal-2.6.3 prodigal && \
+  cd prodigal && \
+  make
+
+ENV PATH "$PATH:/kb/module/prodigal"
 
 # Install Pplacer
+# NOTE: The following block is replaced by the following section because the need of installing
+# opam and its respective dependencies has been a big hassle and unsuccessful 
 # WORKDIR /kb/module
-# NOTE: The following block is replaced by adding the ./pplacer-linux-v1.1.alpha19.zip downloaded from
-# a link at https://github.com/matsen/pplacer/releases/download/v1.1.alpha19/pplacer-linux-v1.1.alpha19.zip, which, if accessed from curl, would be redirected and required password.
 #RUN \
 #  curl -s https://codeload.github.com/matsen/pplacer/tar.gz/v1.1.alpha19 > pplacer-1.1.alpha19.tar.gz && \
 #  tar -xvzf pplacer-1.1.alpha19.tar.gz && \
@@ -100,22 +108,15 @@ RUN \
 #  cd pplacer && \
 #  cat opam-requirements.txt | xargs opam install -y && \
 #  make all
-ADD ./pplacer-linux-v1.1.alpha19.zip /kb/module/ 
+
 WORKDIR /kb/module
-RUN unzip pplacer-linux-v1.1.alpha19.zip && \
+RUN \
+  wget https://github.com/matsen/pplacer/releases/download/v1.1.alpha19/pplacer-linux-v1.1.alpha19.zip && \
+  unzip pplacer-linux-v1.1.alpha19.zip && \ 
   ln -s pplacer-Linux-v1.1.alpha19 pplacer && \
   rm -f pplacer-linux-v1.1.alpha19.zip && \
   rm -f pplacer-1.1.alpha19.tar.gz
 
-# Install numpy, etc. (probably not necessary)
-#WORKDIR /kb/module
-#RUN \
-#  pip install numpy
-#  pip install scipy
-#  pip install matplotlib
-#  pip install pysam
-#  pip install dendropy
-#  pip install ScreamingBackpack
 
 # For checkm-genome required data
 RUN mkdir /data
