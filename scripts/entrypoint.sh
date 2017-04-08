@@ -17,10 +17,11 @@ elif [ "${1}" = "async" ] ; then
   sh ./scripts/run_async.sh
 elif [ "${1}" = "init" ] ; then
   echo "Initialize module"
-  cd /data
-  curl -s https://data.ace.uq.edu.au/public/CheckM_databases/checkm_data_v1.0.7.tar.gz|tar xzf - --directory checkm_data
+  cd /data/checkm_data # There is 1.3G data
+  #curl -s https://data.ace.uq.edu.au/public/CheckM_databases/checkm_data_v1.0.7.tar.gz|tar xzf -
+  checkm data setRoot checkm_data
+  checkm data update # ensure you have the latest (32) data files from the ACE server
   if [ -d "checkm_data/genome_tree" ] ; then
-        checkm data setRoot checkm_data
         touch __READY__
   else
     echo "Init failed"

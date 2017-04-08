@@ -13,6 +13,9 @@ RUN apt-get update
 
 RUN pip install coverage
 
+# Hope to solve the "Could not find .egg-info directory in install record for checkm-genome, etc."
+RUN pip install --upgrade setuptools pip
+
 # update security libraries in the base image
 RUN pip install cffi --upgrade \
     && pip install pyopenssl --upgrade \
@@ -100,6 +103,7 @@ RUN \
 ADD ./pplacer-linux-v1.1.alpha19.zip /kb/module/ 
 WORKDIR /kb/module
 RUN unzip pplacer-linux-v1.1.alpha19.zip && \
+  ln -s pplacer-Linux-v1.1.alpha19 pplacer && \
   rm -f pplacer-linux-v1.1.alpha19.zip && \
   rm -f pplacer-1.1.alpha19.tar.gz
 
@@ -113,15 +117,22 @@ RUN unzip pplacer-linux-v1.1.alpha19.zip && \
 #  pip install dendropy
 #  pip install ScreamingBackpack
 
-# Install CheckM
+# Install CheckM (collected packages: checkm-genome, pysam, dendropy, ScreamingBackpack)
+# Until seeing "Successfully installed ScreamingBackpack-0.2.333 checkm-genome-1.0.7 dendropy-4.2.0 pysam-0.10.0"
 WORKDIR /kb/module
 RUN \
-  pip install checkm-genome
+  pip install pysam \
+  && pip install dendropy \
+  && pip install ScreamingBackpack \
+  && pip install checkm-genome \
+  && ln -s checkm-genome-1.0.7 checkm-genome
 
-
-# For required data to mount (handled in ENTRYPOINT)
-RUN mkdir /data && \
-    mkdir /data/checkm_data
+# For checkm-genome required data
+RUN \
+    mkdir /data && \
+    mkdir /data/checkm_data && \
+    checkm data setRoot /data/checkm_data && \
+    checkm data update
 
 
 # -----------------------------------------
