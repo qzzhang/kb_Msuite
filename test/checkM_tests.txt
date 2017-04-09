@@ -148,3 +148,20 @@ Traceback (most recent call last):
     tempSeq = seqs[seqId]
 KeyError: '637000110'
 
+root@9233bd384080:/kb/module# ls /data/checkm_results/
+gene_call_tests  results
+root@9233bd384080:/kb/module# ls /data/checkm_results/gene_call_tests/
+bins  storage
+root@9233bd384080:/kb/module# ls /data/checkm_results/gene_call_tests/bins
+PF00164.20.masked  PF00281.14.masked  PF00411.14.masked  PF00861.17.masked  PF04563.10.masked
+PF00177.16.masked  PF00297.17.masked  PF00466.15.masked  PF01192.17.masked  PF04565.11.masked
+PF00181.18.masked  PF00298.14.masked  PF00562.23.masked  PF01509.13.masked  PF04997.7.masked
+PF00189.15.masked  PF00312.17.masked  PF00572.13.masked  PF02978.14.masked  PF05000.12.masked
+PF00203.16.masked  PF00318.15.masked  PF00573.17.masked  PF03719.10.masked  PF11987.3.masked
+PF00237.14.masked  PF00333.15.masked  PF00623.15.masked  PF03946.9.masked   TIGR00344.masked
+PF00238.14.masked  PF00366.15.masked  PF00673.16.masked  PF03947.13.masked  TIGR00422.masked
+PF00252.13.masked  PF00380.14.masked  PF00687.16.masked  PF04560.15.masked
+PF00276.15.masked  PF00410.14.masked  PF00831.18.masked  PF04561.9.masked
+root@9233bd384080:/kb/module# ls /data/checkm_results/gene_call_tests/storage/
+bin_stats.tree.tsv  phylo_hmm_info.pkl.gz
+
