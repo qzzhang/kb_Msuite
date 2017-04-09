@@ -91,6 +91,7 @@ RUN \
   wget https://github.com/hyattpd/Prodigal/archive/v2.6.3.tar.gz && \
   tar -zxvf v2.6.3.tar.gz && \
   ln -s Prodigal-2.6.3 prodigal && \
+  rm -f v2.6.3.tar.gz && \
   cd prodigal && \
   make
 
@@ -117,12 +118,8 @@ RUN \
   rm -f pplacer-linux-v1.1.alpha19.zip && \
   rm -f pplacer-1.1.alpha19.tar.gz
 
+ENV PATH "$PATH:/kb/module/pplacer"
 
-# For checkm-genome required data
-RUN mkdir /data
-RUN chmod -R 777 /data
-RUN mkdir -p /data/checkm_data
-RUN chmod -R 777 /data/checkm_data
 
 # Install CheckM (collected packages: checkm-genome, pysam, dendropy, ScreamingBackpack)
 # Until seeing "Successfully installed ScreamingBackpack-0.2.333 checkm-genome-1.0.7 dendropy-4.2.0 pysam-0.10.0"
@@ -133,6 +130,14 @@ RUN \
   && pip install ScreamingBackpack \
   && pip install checkm-genome \
   && ln -s checkm-genome-1.0.7 checkm-genome 
+
+# For checkm-genome required data
+RUN mkdir /data
+RUN chmod -R 777 /data
+RUN mkdir -p /data/checkm_data
+RUN chmod -R 777 /data/checkm_data
+RUN mkdir -p /data/checkm_results
+RUN chmod -R 777 /data/checkm_results
 
 # -----------------------------------------
 
