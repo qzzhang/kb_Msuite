@@ -16,7 +16,8 @@ def log(message, prefix_newline=False):
 
 
 class CheckMUtil:
-    CHECKM_TOOLKIT_PATH = '/kb/deployment/bin/CheckM'
+    CHECKM_WORKFLOW_PATH = '/usr/local/bin/checkm'
+    CHECKM_PROCACULATED_DATA_PATH = '/data/checkm_data/'
 
     def _validate_run_checkM_params(self, params):
         """
