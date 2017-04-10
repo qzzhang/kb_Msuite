@@ -116,7 +116,7 @@ RUN \
   unzip pplacer-linux-v1.1.alpha19.zip && \ 
   ln -s pplacer-Linux-v1.1.alpha19 pplacer && \
   rm -f pplacer-linux-v1.1.alpha19.zip && \
-  rm -f pplacer-1.1.alpha19.tar.gz
+  rm -f pplacer-1.1.alpha19.tar.gz 
 
 ENV PATH "$PATH:/kb/module/pplacer"
 
@@ -128,8 +128,8 @@ RUN \
   pip install pysam \
   && pip install dendropy \
   && pip install ScreamingBackpack \
-  && pip install checkm-genome \
-  && ln -s checkm-genome-1.0.7 checkm-genome 
+  && pip install checkm-genome
+  #&& ln -s checkm-genome-1.0.7 checkm-genome 
 
 # For checkm-genome required data
 RUN mkdir /data
