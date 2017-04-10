@@ -93,9 +93,10 @@ RUN \
   ln -s Prodigal-2.6.3 prodigal && \
   rm -f v2.6.3.tar.gz && \
   cd prodigal && \
-  make
+  make && \
+  cp prodigal /kb/deployment/bin/prodigal
 
-ENV PATH "$PATH:/kb/module/prodigal"
+#ENV PATH "$PATH:/kb/development/bin/prodigal"
 
 # Install Pplacer
 # NOTE: The following block is replaced by the following section because the need of installing
@@ -116,9 +117,10 @@ RUN \
   unzip pplacer-linux-v1.1.alpha19.zip && \ 
   ln -s pplacer-Linux-v1.1.alpha19 pplacer && \
   rm -f pplacer-linux-v1.1.alpha19.zip && \
-  rm -f pplacer-1.1.alpha19.tar.gz 
+  rm -f pplacer-1.1.alpha19.tar.gz && \
+  cp -R pplacer-Linux-v1.1.alpha19 /kb/deployment/bin/pplacer
 
-ENV PATH "$PATH:/kb/module/pplacer"
+ENV PATH "$PATH:/kb/deployment/bin/pplacer"
 
 
 # Install CheckM (collected packages: checkm-genome, pysam, dendropy, ScreamingBackpack)
@@ -129,7 +131,6 @@ RUN \
   && pip install dendropy \
   && pip install ScreamingBackpack \
   && pip install checkm-genome
-  #&& ln -s checkm-genome-1.0.7 checkm-genome 
 
 # For checkm-genome required data
 RUN mkdir /data

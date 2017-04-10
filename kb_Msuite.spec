@@ -31,12 +31,6 @@ module kb_Msuite {
         thread: number of threads; default 1
         external_genes: indicating an external gene call instead of using prodigal, default 0
         external_genes_file: the file containing genes for gene call, default "" 
-
-        markerset: choose between 107 marker genes by default or 40 marker genes
-        min_contig_length: minimum contig length; default 1000
-        plotmarker: specify this option if you want to plot the markers in each contig
-
-        ref: https://github.com/Ecogenomics/CheckM/wiki/Installation#how-to-install-checkm
     */
     typedef structure {
         string workspace_name;
@@ -47,9 +41,6 @@ module kb_Msuite {
         int thread;
         boolean external_genes;
         string external_genes_file;
-        int markerset;
-        int min_contig_length;
-        boolean plotmarker;
     } CheckMInputParams;
 
     /*
