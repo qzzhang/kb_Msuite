@@ -57,6 +57,234 @@ class CheckMUtil:
         if len(output.split(start)) > 1:
             self.output_summary = output.split(start)[1].split(end)[0]
 
+    /* Lineage-specific Workflow */
+    def _tree(self, bin_folder, out_folder):
+        """
+        The checkm ‘tree’ command places genome bins into a reference genome tree. 
+        All genomes to be analyzed must reside in a single ‘bins’ directory. 
+        CheckM assumes genome bins are in FASTA format with the extension ‘fna’, 
+        though this can be changed with the –x flag. 
+        """
+
+
+    def _tree_qa(self, out_folder):
+        """
+        The checkm ‘tree_qa’ command indicates the number of phylogenetically informative
+        marker genes found in each genome bin along with a taxonomic string indicating 
+        its approximate placement in the tree. If desired, genome bins with few phylogenetically 
+        marker genes may be removed in order to reduce the computational requirements of 
+        the following commands.
+        Alternatively, if only genomes from a particular taxonomic group are of interest 
+        these can be moved to a separate directory and analysed separately.
+        """
+
+
+    def _lineage_set(self, out_folder, marker_file):
+        """
+        The checkm ‘lineage_set’ command creates a marker file indicating lineage-specific marker sets 
+        suitable for evaluating each genome. This marker file is passed to the ‘analyze’ command.
+        """
+
+
+    def _analyze(self, marker_file, bin_folder, out_folder):
+        """
+        The checkm ‘analyze’ command takes in a marker file,  identify marker genes and estimate the 
+        completeness and contamination of each genome bin.  
+        """
+
+
+    def _qa(self, marker_file, out_folder):
+        """
+        The checkm ‘qa’ command produces different tables summarizing the quality of each genome bin.
+        """
+
+    /* CheckM Plots */
+    def _bin_qa_plot(self, out_folder, bin_folder, plot_folder):
+        """
+        Bar plot of bin completeness, contamination, and strain heterogeneity.
+
+        Provides a visual representation of the completeness, contamination, and strain
+heterogeneity within each genome bin. Bars in green represent markers identified exactly once,
+while bars in grey represent missing markers. Markers identified multiple times in a genome bin are
+represented by shades of blue or red depending on the amino acid identity (AAI) between pairs of
+multi-copy genes and the total number of copies present (2-5+). Pairs of multi-copy genes with an
+AAI ≥90% are indicated with shades of blue, while genes with less amino acid similarity are shown in
+red. A gene present 3 or more times may have pairs with an AAI ≥90% and pairs with an AAI < 90%. 
+
+        positional arguments:
+          out_folder--folder specified during qa command
+          bin_folder--folder containing bins to plot (fasta format)
+          plot_folder--folder to hold plots
+        
+        optional arguments:
+          image_type {eps,pdf,png,ps,svg}--desired image type (default: png)
+          dpi DPI--desired DPI of output image (default: 600)
+          font_size FONT_SIZE--Desired font size (default: 8)
+          x, extension EXTENSION--extension of bins (other files in folder are ignored) (default: fna)
+          width WIDTH--width of output image (default: 6.5)
+          row-height ROW-HEIGHT--height of each row in the output image (default: 0.3)
+          w, --gc_window_size GC_WINDOW_SIZE--window size used to calculate GC histogram (default: 5000)
+          ignore_hetero--do not plot strain heterogeneity
+          aai_strain AAI_STRAIN--AAI threshold used to identify strain heterogeneity (default: 0.9)
+          q, --quiet--suppress console output
+        """
+
+    def _gc_plot(self, bin_folder, plot_folder, dist_value):
+        """
+        Create GC histogram and delta-GC plot.
+
+        Provides a 3 pane plot suitable for assessing the GC distribution of sequences within a
+genome bin. The first pane is a histogram of the number of non-overlapping 5 kbp windows with a
+give percent GC. A typical genome will produce a unimodal distribution. The bimodal distribution in
+this example suggests this genome bin may be substantially contaminated. The second pane plots
+each sequence in the genome bin as a function of its change for the average GC of the entire
+genome (x-axis) and sequence length (y-axis). The dashed red lines indicate the expected deviation
+from the mean GC as a function of length. This expected deviation is pre-calculated for a set of
+reference genomes and the exact percentile plotted is provided as an argument to this command. 
+        
+        positional arguments:
+          bin_folder--folder containing bins to plot (fasta format)
+          plot_folder--folder to hold plots
+          dist_value--reference distribution(s) to plot; integer between 0 and 100
+
+        optional arguments:
+          image_type {eps,pdf,png,ps,svg}--desired image type (default: png)
+          dpi DPI--desired DPI of output image (default: 600)
+          font_size FONT_SIZE--Desired font size (default: 8)
+          x, extension EXTENSION--extension of bins (other files in folder are ignored) (default: fna)
+          width WIDTH--width of output image (default: 6.5)
+          height HEIGHT--height of output image (default: 3.5)
+          w, --gc_window_size GC_WINDOW_SIZE--window size used to calculate GC histogram (default: 5000)
+          b, --gc_bin_width GC_BIN_WIDTH--width of GC bars in histogram (default: 0.01)
+          q, --quiet--suppress console output
+        """
+
+    def _coding_plot(self, out_folder, bin_folder, plot_folder, dist_value):
+        """
+        Create coding density (CD) histogram and delta-CD plot.
+
+        Provides a plot analogous to the gc_plot suitable for assessing the coding density of
+sequences within a genome bin
+
+        Example: checkm coding_plot ./output ./bins ./plots 95
+        """
+
+    def _tetra_plot(self, out_folder, bin_folder, plot_folder, tetra_profile):
+        """
+        Create tetranucleotide distance (TD) histogram and delta-TD plot.
+
+        Provides a plot analogous to the gc_plot suitable for assessing the tetranucleotide
+signatures of sequences within a genome bin. The Manhattan distance is used for determine the
+different between each sequences tetranucleotide signature and the tetranucleotide signature of
+the entire genome bin. This plot requires a file indicating the tetranucleotide signature of all
+sequences within the genome bins. This file can be creates with the ‘tetra’ command.
+
+        Example: checkm tetra_plot ./output ./bins ./plots tetra.tsv 95
+        """
+
+
+    def _dist_plot(self, out_folder, bin_folder, plot_folder, tetra_profile, dist_value):
+        """
+        Create image with GC, CD, and TD distribution plots together.
+
+        Produces a single figure combining the plots produced by gc_plot, coding_plot, and
+tetra_plot. This plot requires a file indicating the tetranucleotide signature of all sequences within
+the genome bins. This file can be creates with the ‘tetra’ command.
+
+        Example: checkm dist_plot ./output ./bins ./plots tetra.tsv 95
+        """
+
+
+    def _nx_plot(self, bin_folder, plot_folder):
+        """
+        Create Nx-plots.
+
+        Produces a plot indicating the Nx value of a genome bin for all values of x. This provides a
+more comprehensive view of the quality of an assembly than simply considering N50.
+        
+        Example: checkm nx_plot ./bins ./plots
+        """
+
+
+    def _len_plot(self, bin_folder, plot_folder):
+        """
+        Cumulative sequence length plot.
+
+        Produces a plot of the cumulative sequence length of a genome bin with sequences
+organized from longest to smallest. This provides additional information regarding the quality of an
+assembled genome.
+
+        Example: checkm len_plot ./bins ./plots
+        """
+
+
+    def _len_hist(self, bin_folder, plot_folder):
+        """
+        Sequence length histogram.
+
+        Produces a histogram of the number of sequences within a genome bin at different
+sequence length intervals. This provides additional information regarding the quality of an
+assembled genome.
+
+        Example: checkm len_hist ./bins ./plots
+        """
+
+
+    def _marker_plot(self, out_folder, bin_folder, plot_folder):
+        """
+        Plot position of marker genes on sequences.
+
+        Plots the position of marker genes on sequences within a genome bin. This provides
+information regarding the extent to which marker genes are collocated. The number of marker
+genes within a fixed size window (2.8 kbps in this example) is indicated by with different colours.
+Sequences without any marker genes are not shown. 
+
+        Example: checkm marker_plot ./output ./bins ./plots
+        """
+
+
+    def _par_plot(self, out_folder, bin_folder, plot_folder, coverage_file):
+        """
+        Parallel coordinate plot of GC and coverage.
+
+        Produces a parallel coordinate plot illustrating the GC and coverage of each sequence
+within a genome bin. In a typical genome, all sequences will produce a similar path across the plot.
+Sequences with a divergent path may be contamination. In this example, the scaffolds were
+obtained from a single metagenomic dataset resulting in a single coverage dimension making it
+difficult to determine if any sequences might represent contamination. This plot requires a file 
+10 of 11
+indicating the coverage profile of all sequences within the genome bins. This file can be creates with
+the ‘coverage’ command.
+
+        Example: checkm par_plot ./output ./bins ./plots coverage.tsv
+        """
+
+
+    def _cov_pca(self, bin_folder, plot_folder, coverage_file):
+        """
+        PCA plot of coverage profiles.
+
+        Produces a principal component plot (PCA) of the coverage profile distance between
+sequences within a putative genome. This plot requires a file indicating the coverage profile of all
+sequences within the genome bins. This file can be creates with the ‘coverage’ command.
+
+        Example: checkm cov_pca ./bins ./plots coverate.tsv
+        """
+
+
+    def _tetra_pca(self,  bin_folder, plot_folder, tetra_profile):
+        """
+        PCA plot of tetranucleotide signatures.
+
+        Produces a principal component plot (PCA) indicating the tetranucleotide distance
+between sequences within a putative genome. This plot requires a file indicating the tetranucleotide
+signature of all sequences within the genome bins. This file can be creates with the ‘tetra’ command.
+
+        Example: checkm tetra_pca ./bins ./plots tetra.tsv
+        """
+
+
+
     def _generate_command(self, params):
         """
         _generate_command: generate checkm command
