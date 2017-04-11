@@ -27,7 +27,7 @@ class CheckMUtil:
         log('Start validating run_checkM params')
 
         # check for required parameters
-        for p in ['checkM_workflow_name', 'putative_genomes_folder', 'workspace_name', 'file_extension']:
+        for p in ['checkM_command_name', 'putative_genomes_in_folder', 'putative_genomes_in_folder', 'workspace_name']:
             if p not in params:
                 raise ValueError('"{}" parameter is required, but missing'.format(p))
 
@@ -57,6 +57,42 @@ class CheckMUtil:
         if len(output.split(start)) > 1:
             self.output_summary = output.split(start)[1].split(end)[0]
 
+    def _generate_command(self, params):
+        """
+        _generate_command: generate checkm command
+        """
+
+        command = 'checkm '
+
+        cmd_name = params.get('checkM_command_name')
+        if (cmd_name):
+            command += cmd_name
+
+            """ The lineage_wf workflow command
+                Example: checkm lineage_wf ./bins ./output
+            """
+            if(cmd_name == 'lineage_wf'):
+                command += ' {}' . format(params.get('bin_folder'))
+                command += ' {}' . format(params.get('out_folder'))
+
+            """ The taxonomy_wf workflow command,
+                Example: checkm taxonomy_wf domain Bacteria ./bins ./output
+            """
+            if(cmd_name == 'taxonomy_wf'):
+                command += ' domain {}' . format(params.get('domain'))
+                command += ' {}' . format(params.get('bin_folder'))
+                command += ' {}' . format(params.get('out_folder'))
+
+            if params.get('thread'):
+                command += '-thread {} '.format(params.get('thread'))
+
+        else:
+            command = 'Invalid checkM command'
+
+        log('Generated checmM command: {}'.format(command))
+
+        return command
+
     def _run_command(self, command):
         """
         _run_command: run command and print result
@@ -75,6 +111,71 @@ class CheckMUtil:
             error_msg = 'Error running commend:\n{}\n'.format(command)
             error_msg += 'Exit Code: {}\nOutput:\n{}'.format(exitCode, output)
             raise ValueError(error_msg)
+
+
+    def _stage_file(self, file):
+        """
+        _stage_file: download local file/ shock file to scratch area
+        """
+
+        log('Processing file: {}'.format(file))
+
+        input_directory = os.path.join(self.scratch, str(uuid.uuid4()))
+        self._mkdir_p(input_directory)
+
+        if file.get('path'):
+            # handle local file
+            local_file_path = file['path']
+            file_path = os.path.join(input_directory, os.path.basename(local_file_path))
+            log('Moving file from {} to {}'.format(local_file_path, file_path))
+            shutil.copy2(local_file_path, file_path)
+
+        if file.get('shock_id'):
+            # handle shock file
+            log('Downloading file from SHOCK node: {}-{}'.format(self.shock_url,
+                                                                 file['shock_id']))
+            sys.stdout.flush()
+            file_name = self.dfu.shock_to_file({'file_path': input_directory,
+                                                'shock_id': file['shock_id']
+                                                })['node_file_name']
+            file_path = os.path.join(input_directory, file_name)
+
+        sys.stdout.flush()
+        file_path = self.dfu.unpack_file({'file_path': file_path})['file_path']
+
+        return file_path
+
+    def _stage_file_list(self, file_list):
+        """
+        _stage_file_list: download list of local file/ shock file to scratch area
+                          and write result_file_path to file
+        """
+
+        log('Processing file list: {}'.format(file_list))
+
+        result_directory = os.path.join(self.scratch, str(uuid.uuid4()))
+        self._mkdir_p(result_directory)
+        result_file = os.path.join(result_directory, 'result.txt')
+
+        result_file_path = []
+
+        if 'shock_id' in file_list:
+            for file in file_list.get('shock_id'):
+                file_path = self._stage_file({'shock_id': file})
+                result_file_path.append(file_path)
+
+        if 'path' in file_list:
+            for file in file_list.get('path'):
+                file_path = self._stage_file({'path': file})
+                result_file_path.append(file_path)
+
+        log('Saving file path(s) to: {}'.format(result_file))
+        with open(result_file, 'w') as file_handler:
+            for item in result_file_path:
+                file_handler.write("{}\n".format(item))
+
+        return result_file
+
 
     def _generate_report(self, result_directory, params):
         """
@@ -181,27 +282,38 @@ class CheckMUtil:
 
     def run_checkM(self, params):
         """
+        run_checkM: run the checkm commands
+
         required params:
-        putative_genomes_folder: folder path that holds all putative genome files with (fa as the file extension) to be checkM-ed
-        checkM_workflow_name: name of the CheckM workflow,e.g., lineage_wf or taxonomy_wf
-        file_extension: the extension of the putative genome file, should be "fna"
+        putative_genomes_in_folder: folder path that holds all putative genome files with (fna as the file extension) to be checkM-ed
+        putative_genomes_out_folder: folder path that holds all the checkm workflow results 
+        checkM_command_name: name of the CheckM command,e.g., lineage_wf or taxonomy_wf
         workspace_name: the name of the workspace it gets saved to.
 
         optional params:
         thread: number of threads; default 1
         external_genes: indicating an external gene call instead of using prodigal, default 0
         external_genes_file: the file containing genes for gene call, default "" 
-
-        markerset: choose between 107 marker genes by default or 40 marker genes
-        min_contig_length: minimum contig length; default 1000
-        plotmarker: specify this option if you want to plot the markers in each contig
-
-        ref: https://github.com/Ecogenomics/CheckM/wiki/Installation#how-to-install-checkm
         """
         log('--->\nrunning MaxBinUtil.run_maxbin\n' +
             'params:\n{}'.format(json.dumps(params, indent=1)))
 
         self._validate_run_checkM_params(params)
+
+        command = self._generate_command(params)
+
+        existing_files = []
+        for subdir, dirs, files in os.walk('./'):
+            for file in files:
+                existing_files.append(file)
+
+        self._run_command(command)
+
+        new_files = []
+        for subdir, dirs, files in os.walk('./'):
+            for file in files:
+                if file not in existing_files:
+                    new_files.append(file)
         
         result_directory = os.path.join(self.scratch, str(uuid.uuid4()))
         self._mkdir_p(result_directory)
