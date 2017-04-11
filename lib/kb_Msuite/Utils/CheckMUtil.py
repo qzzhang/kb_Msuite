@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import time
 import json
 import os
@@ -57,7 +58,7 @@ class CheckMUtil:
         if len(output.split(start)) > 1:
             self.output_summary = output.split(start)[1].split(end)[0]
 
-    /* Lineage-specific Workflow */
+    # Lineage-specific Workflow
     def _tree(self, bin_folder, out_folder):
         """
         The checkm ‘tree’ command places genome bins into a reference genome tree. 
@@ -98,7 +99,7 @@ class CheckMUtil:
         The checkm ‘qa’ command produces different tables summarizing the quality of each genome bin.
         """
 
-    /* CheckM Plots */
+    # CheckM Plots
     def _bin_qa_plot(self, out_folder, bin_folder, plot_folder):
         """
         Bar plot of bin completeness, contamination, and strain heterogeneity.
