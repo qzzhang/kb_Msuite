@@ -17,10 +17,11 @@ elif [ "${1}" = "async" ] ; then
   sh ./scripts/run_async.sh
 elif [ "${1}" = "init" ] ; then
   echo "Initialize module"
-  checkm data setRoot /data/checkm_data
-  #checkm data update # ensure you have the latest (32) data files from the ACE server
+  #cp  /usr/local/lib/python2.7/dist-packages/checkm/DATA_CONFIG.orig /data/DATA_CONFIG
+  echo /data/checkm_data | checkm data setRoot /data/checkm_data
+  echo y | checkm data update # ensure you have the latest (32) data files from the ACE server
   if [ -d "/data/checkm_data/genome_tree" ] ; then
-        touch __READY__
+    touch /data/__READY__
   else
     echo "Init failed"
   fi

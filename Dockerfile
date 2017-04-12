@@ -133,15 +133,14 @@ RUN \
   && pip install checkm-genome
 
 # For checkm-genome required data
-RUN mkdir /data
-RUN chmod -R 777 /data
-RUN mkdir -p /data/checkm_data
-RUN chmod -R 777 /data/checkm_data
-RUN mkdir -p /data/checkm_results
-RUN chmod -R 777 /data/checkm_results
+RUN \
+    mkdir /data && \
+    mv /usr/local/lib/python2.7/dist-packages/checkm/DATA_CONFIG /usr/local/lib/python2.7/dist-packages/checkm/DATA_CONFIG.orig && \
+    touch /data/DATA_CONFIG && \
+    cp /usr/local/lib/python2.7/dist-packages/checkm/DATA_CONFIG.orig /data/DATA_CONFIG && \
+    ln -sf /data/DATA_CONFIG /usr/local/lib/python2.7/dist-packages/checkm/DATA_CONFIG
 
 # -----------------------------------------
-
 COPY ./ /kb/module
 RUN mkdir -p /kb/module/work
 RUN chmod -R a+rw /kb/module
