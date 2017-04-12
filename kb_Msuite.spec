@@ -30,8 +30,6 @@ module kb_Msuite {
         optional params:
         file_extension: the extension of the putative genome file, should be "fna"
         thread: number of threads; default 1
-        external_genes: indicating an external gene call instead of using prodigal, default 0
-        external_genes_file: the file containing genes for gene call, default "" 
     */
     typedef structure {
         string bin_folder;
