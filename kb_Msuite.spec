@@ -22,8 +22,8 @@ module kb_Msuite {
 
     /*  
         required params:
-        bin_in_folder: folder path that holds all putative genome files with (fa as the file extension) to be checkM-ed
-        bin_out_folder: folder path that holds all putative genome files with (fa as the file extension) to be checkM-ed
+        bin_folder: folder path that holds all putative genome files with (fa as the file extension) to be checkM-ed
+        out_folder: folder path that holds all putative genome files with (fa as the file extension) to be checkM-ed
         checkM_cmd_name: name of the CheckM workflow,e.g., lineage_wf or taxonomy_wf
         workspace_name: the name of the workspace it gets saved to.
 
@@ -34,15 +34,13 @@ module kb_Msuite {
         external_genes_file: the file containing genes for gene call, default "" 
     */
     typedef structure {
-        string bin_in_folder;
-        string bin_out_folder;
+        string bin_folder;
+        string out_folder;
         string checkM_cmd_name;
         string workspace_name;
 
         string file_extension;
         int thread;
-        boolean external_genes;
-        string external_genes_file;
     } CheckMInputParams;
 
     /*

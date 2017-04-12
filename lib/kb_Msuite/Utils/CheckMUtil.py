@@ -28,7 +28,7 @@ class CheckMUtil:
         log('Start validating run_checkM params')
 
         # check for required parameters
-        for p in ['checkM_command_name', 'putative_genomes_in_folder', 'putative_genomes_in_folder', 'workspace_name']:
+        for p in ['checkM_cmd_name', 'bin_folder', 'out_folder']:
             if p not in params:
                 raise ValueError('"{}" parameter is required, but missing'.format(p))
 
@@ -99,6 +99,19 @@ class CheckMUtil:
         The checkm ‘qa’ command produces different tables summarizing the quality of each genome bin.
         """
 
+    def _lineage_wf(self, bin_folder, out_folder):
+        """
+        Runs tree, lineage_set, analyze, qa
+
+	positional arguments:
+	  bin_folder--folder containing bins (fasta format)
+	  out_folder--folder to write output files
+	
+	Example: checkm lineage_wf ./bins ./output
+	"""
+	self._run_command("checkm lineage_wf {} {}" .format(bin_folder, out_folder))	
+	
+
     # CheckM Plots
     def _bin_qa_plot(self, out_folder, bin_folder, plot_folder):
         """
@@ -129,6 +142,7 @@ red. A gene present 3 or more times may have pairs with an AAI ≥90% and pairs 
           aai_strain AAI_STRAIN--AAI threshold used to identify strain heterogeneity (default: 0.9)
           q, --quiet--suppress console output
         """
+	pass
 
     def _gc_plot(self, bin_folder, plot_folder, dist_value):
         """
@@ -514,9 +528,9 @@ signature of all sequences within the genome bins. This file can be creates with
         run_checkM: run the checkm commands
 
         required params:
-        putative_genomes_in_folder: folder path that holds all putative genome files with (fna as the file extension) to be checkM-ed
-        putative_genomes_out_folder: folder path that holds all the checkm workflow results 
-        checkM_command_name: name of the CheckM command,e.g., lineage_wf or taxonomy_wf
+        bin_folder: folder path that holds all putative genome files with (fna as the file extension) to be checkM-ed
+        out_folder: folder path that holds all the checkm workflow results 
+        checkM_cmd_name: name of the CheckM command,e.g., lineage_wf or taxonomy_wf
         workspace_name: the name of the workspace it gets saved to.
 
         optional params:
