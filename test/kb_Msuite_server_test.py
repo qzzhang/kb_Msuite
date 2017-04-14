@@ -50,6 +50,7 @@ class kb_MsuiteTest(unittest.TestCase):
         cls.serviceImpl = kb_Msuite(cls.cfg)
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
+        cls.checkm_runner = CheckMUtil(cls.cfg)
 
     @classmethod
     def tearDownClass(cls):
@@ -105,7 +106,7 @@ class kb_MsuiteTest(unittest.TestCase):
             'checkM_cmd_name': 'lineage_wf'
         }
 
-        expect_command = '/kb/deployment/bin/CheckMBin/checkm ' + 'lineage_wf '
+        expect_command = '/kb/deployment/bin/CheckMBin/checkm ' + 'lineage_wf'
         expect_command += 'my_bin_folder my_out_folder '
         command = self.checkm_runner._generate_command(input_params)
         self.assertEquals(command, expect_command)

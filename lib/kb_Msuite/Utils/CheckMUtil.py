@@ -304,7 +304,7 @@ signature of all sequences within the genome bins. This file can be creates with
         _generate_command: generate checkm command
         """
 
-        command = self.CHECKM_WORKFLOW_PATH . 'checkm '
+        command = self.CHECKM_WORKFLOW_PATH + 'checkm '
 
         cmd_name = params.get('checkM_cmd_name')
         if (cmd_name):
