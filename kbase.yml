@@ -13,3 +13,6 @@ module-version:
 owners:
     [dylan, dparks, qzhang]
 
+data-version:
+    1.0
+

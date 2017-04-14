@@ -17,7 +17,11 @@ elif [ "${1}" = "async" ] ; then
   sh ./scripts/run_async.sh
 elif [ "${1}" = "init" ] ; then
   echo "Initialize module"
-  #cp  /usr/local/lib/python2.7/dist-packages/checkm/DATA_CONFIG.orig /data/DATA_CONFIG
+  cp /usr/local/lib/python2.7/dist-packages/checkm/DATA_CONFIG.orig /data/DATA_CONFIG
+  cd /data/checkm_data
+  curl https://data.ace.uq.edu.au/public/CheckM_databases/checkm_data_v1.0.7.tar.gz
+  tar -xvzf checkm_data_v1.0.7.tar.gz
+  rm -r checkm_data_v1.0.7.tar.gz
   echo /data/checkm_data | checkm data setRoot /data/checkm_data
   echo y | checkm data update # ensure you have the latest (32) data files from the ACE server
   if [ -d "/data/checkm_data/genome_tree" ] ; then

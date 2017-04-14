@@ -140,6 +140,8 @@ RUN \
     cp /usr/local/lib/python2.7/dist-packages/checkm/DATA_CONFIG.orig /data/DATA_CONFIG && \
     ln -sf /data/DATA_CONFIG /usr/local/lib/python2.7/dist-packages/checkm/DATA_CONFIG
 
+RUN mkdir -p /data/checkm_data
+
 # -----------------------------------------
 COPY ./ /kb/module
 RUN mkdir -p /kb/module/work
