@@ -17,7 +17,7 @@ from biokbase.workspace.client import Workspace as workspaceService
 from kb_Msuite.kb_MsuiteImpl import kb_Msuite
 from kb_Msuite.kb_MsuiteServer import MethodContext
 from kb_Msuite.authclient import KBaseAuth as _KBaseAuth
-
+from kb_Msuite.Utils.CheckMUtil import CheckMUtil
 
 class kb_MsuiteTest(unittest.TestCase):
 
@@ -87,3 +87,26 @@ class kb_MsuiteTest(unittest.TestCase):
         # Check returned data with
         # self.assertEqual(ret[...], ...) or other unittest methods
         pass
+
+
+    def test_CheckMUtil_generate_command(self):
+        # Prepare test objects in workspace if needed using
+        # self.getWsClient().save_objects({'workspace': self.getWsName(),
+        #                                  'objects': []})
+        #
+        # Run your method by
+        # ret = self.getImpl().your_method(self.getContext(), parameters...)
+        #
+        # Check returned data with
+        # self.assertEqual(ret[...], ...) or other unittest methods
+        input_params = {
+            'bin_folder': 'my_bin_folder',
+            'out_folder': 'my_out_folder',
+            'checkM_cmd_name': 'lineage_wf'
+        }
+
+        expect_command = '/kb/deployment/bin/CheckMBin/checkm ' + 'lineage_wf '
+        expect_command += 'my_bin_folder my_out_folder '
+        command = self.checkm_runner._generate_command(input_params)
+        self.assertEquals(command, expect_command)
+

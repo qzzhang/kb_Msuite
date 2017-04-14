@@ -10,6 +10,7 @@ import sys
 import re
 
 from KBaseReport.KBaseReportClient import KBaseReport
+from MetagenomeUtils.MetagenomeUtilsClient import MetagenomeUtils
 
 def log(message, prefix_newline=False):
     """Logging function, provides a hook to suppress or redirect log messages."""
@@ -17,7 +18,7 @@ def log(message, prefix_newline=False):
 
 
 class CheckMUtil:
-    CHECKM_WORKFLOW_PATH = '/usr/local/bin/checkm'
+    CHECKM_WORKFLOW_PATH = '/kb/deployment/bin/CheckMBin'
     CHECKM_PROCACULATED_DATA_PATH = '/data/checkm_data/'
 
     def _validate_run_checkM_params(self, params):
@@ -298,16 +299,14 @@ signature of all sequences within the genome bins. This file can be creates with
         Example: checkm tetra_pca ./bins ./plots tetra.tsv
         """
 
-
-
     def _generate_command(self, params):
         """
         _generate_command: generate checkm command
         """
 
-        command = 'checkm '
+        command = self.CHECKM_WORKFLOW_PATH . 'checkm '
 
-        cmd_name = params.get('checkM_command_name')
+        cmd_name = params.get('checkM_cmd_name')
         if (cmd_name):
             command += cmd_name
 
@@ -354,70 +353,6 @@ signature of all sequences within the genome bins. This file can be creates with
             error_msg = 'Error running commend:\n{}\n'.format(command)
             error_msg += 'Exit Code: {}\nOutput:\n{}'.format(exitCode, output)
             raise ValueError(error_msg)
-
-
-    def _stage_file(self, file):
-        """
-        _stage_file: download local file/ shock file to scratch area
-        """
-
-        log('Processing file: {}'.format(file))
-
-        input_directory = os.path.join(self.scratch, str(uuid.uuid4()))
-        self._mkdir_p(input_directory)
-
-        if file.get('path'):
-            # handle local file
-            local_file_path = file['path']
-            file_path = os.path.join(input_directory, os.path.basename(local_file_path))
-            log('Moving file from {} to {}'.format(local_file_path, file_path))
-            shutil.copy2(local_file_path, file_path)
-
-        if file.get('shock_id'):
-            # handle shock file
-            log('Downloading file from SHOCK node: {}-{}'.format(self.shock_url,
-                                                                 file['shock_id']))
-            sys.stdout.flush()
-            file_name = self.dfu.shock_to_file({'file_path': input_directory,
-                                                'shock_id': file['shock_id']
-                                                })['node_file_name']
-            file_path = os.path.join(input_directory, file_name)
-
-        sys.stdout.flush()
-        file_path = self.dfu.unpack_file({'file_path': file_path})['file_path']
-
-        return file_path
-
-    def _stage_file_list(self, file_list):
-        """
-        _stage_file_list: download list of local file/ shock file to scratch area
-                          and write result_file_path to file
-        """
-
-        log('Processing file list: {}'.format(file_list))
-
-        result_directory = os.path.join(self.scratch, str(uuid.uuid4()))
-        self._mkdir_p(result_directory)
-        result_file = os.path.join(result_directory, 'result.txt')
-
-        result_file_path = []
-
-        if 'shock_id' in file_list:
-            for file in file_list.get('shock_id'):
-                file_path = self._stage_file({'shock_id': file})
-                result_file_path.append(file_path)
-
-        if 'path' in file_list:
-            for file in file_list.get('path'):
-                file_path = self._stage_file({'path': file})
-                result_file_path.append(file_path)
-
-        log('Saving file path(s) to: {}'.format(result_file))
-        with open(result_file, 'w') as file_handler:
-            for item in result_file_path:
-                file_handler.write("{}\n".format(item))
-
-        return result_file
 
 
     def _generate_report(self, result_directory, params):
@@ -535,10 +470,8 @@ signature of all sequences within the genome bins. This file can be creates with
 
         optional params:
         thread: number of threads; default 1
-        external_genes: indicating an external gene call instead of using prodigal, default 0
-        external_genes_file: the file containing genes for gene call, default "" 
         """
-        log('--->\nrunning MaxBinUtil.run_maxbin\n' +
+        log('--->\nrunning CheckMUtil.run_checkM\n' +
             'params:\n{}'.format(json.dumps(params, indent=1)))
 
         self._validate_run_checkM_params(params)
