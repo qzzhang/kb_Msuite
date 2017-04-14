@@ -323,6 +323,9 @@ signature of all sequences within the genome bins. This file can be creates with
         if (cmd_name):
             command += cmd_name
 
+            if params.get('thread'):
+                command += ' -t {}'.format(params.get('thread'))
+
             """ The lineage_wf workflow command
                 Example: checkm lineage_wf ./bins ./output
             """
@@ -337,9 +340,6 @@ signature of all sequences within the genome bins. This file can be creates with
                 command += ' domain {}' . format(params.get('domain'))
                 command += ' {}' . format(params.get('bin_folder'))
                 command += ' {}' . format(params.get('out_folder'))
-
-            if params.get('thread'):
-                command += ' -thread {} '.format(params.get('thread'))
 
         else:
             command = 'Invalid checkM command'
