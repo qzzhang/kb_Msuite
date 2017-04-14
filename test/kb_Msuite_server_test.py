@@ -89,8 +89,6 @@ class kb_MsuiteTest(unittest.TestCase):
         # self.assertEqual(ret[...], ...) or other unittest methods
         pass
 
-
-    def test_CheckMUtil_generate_command(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),
         #                                  'objects': []})
@@ -100,14 +98,43 @@ class kb_MsuiteTest(unittest.TestCase):
         #
         # Check returned data with
         # self.assertEqual(ret[...], ...) or other unittest methods
+
+
+    def test_CheckMUtil_generate_command(self):
         input_params = {
             'bin_folder': 'my_bin_folder',
             'out_folder': 'my_out_folder',
             'checkM_cmd_name': 'lineage_wf'
         }
 
-        expect_command = '/kb/deployment/bin/CheckMBin/checkm ' + 'lineage_wf'
+        #expect_command = '/kb/deployment/bin/CheckMBin/checkm ' + 'lineage_wf '
+        expect_command = '/usr/local/bin/checkm ' + 'lineage_wf '
+        expect_command += 'my_bin_folder my_out_folder'
+        command = self.checkm_runner._generate_command(input_params)
+        self.assertEquals(command, expect_command)
+
+        input_params = {
+            'bin_folder': 'my_bin_folder',
+            'out_folder': 'my_out_folder',
+            'checkM_cmd_name': 'lineage_wf',
+            'thread': 2
+        }
+
+        #expect_command = '/kb/deployment/bin/CheckMBin/checkm ' + 'lineage_wf '
+        expect_command = '/usr/local/bin/checkm ' + 'lineage_wf '
+        expect_command += ' -t 2 '
         expect_command += 'my_bin_folder my_out_folder '
         command = self.checkm_runner._generate_command(input_params)
         self.assertEquals(command, expect_command)
+
+    def test_CheckMUtil_run_command(self):
+        bin_folder = "/data/checkm_data/test_data"
+        out_folder = "./test_results"
+        command = '/usr/local/bin/checkm' + ' lineage_wf' + ' -t 2 ' + bin_folder + " " + out_folder
+        #self.checkm_runner._run_command(command)
+
+    def test_CheckMUtil_lineage_wf(self):
+        bin_folder = "/data/checkm_data/test_data"
+        out_folder = "./test_results"
+        self.checkm_runner._lineage_wf(bin_folder, out_folder, 2)
 

@@ -10,7 +10,7 @@ import sys
 import re
 
 from KBaseReport.KBaseReportClient import KBaseReport
-from MetagenomeUtils.MetagenomeUtilsClient import MetagenomeUtils
+#from MetagenomeUtils.MetagenomeUtilsClient import MetagenomeUtils
 
 def log(message, prefix_newline=False):
     """Logging function, provides a hook to suppress or redirect log messages."""
@@ -18,7 +18,8 @@ def log(message, prefix_newline=False):
 
 
 class CheckMUtil:
-    CHECKM_WORKFLOW_PATH = '/kb/deployment/bin/CheckMBin'
+    #CHECKM_WORKFLOW_PATH = '/kb/deployment/bin/CheckMBin'
+    CHECKM_WORKFLOW_PATH = '/usr/local/bin'
     CHECKM_PROCACULATED_DATA_PATH = '/data/checkm_data/'
 
     def _validate_run_checkM_params(self, params):
@@ -100,7 +101,7 @@ class CheckMUtil:
         The checkm ‘qa’ command produces different tables summarizing the quality of each genome bin.
         """
 
-    def _lineage_wf(self, bin_folder, out_folder):
+    def _lineage_wf(self, bin_folder, out_folder, thread=8):
         """
         Runs tree, lineage_set, analyze, qa
 
@@ -108,9 +109,21 @@ class CheckMUtil:
 	  bin_folder--folder containing bins (fasta format)
 	  out_folder--folder to write output files
 	
-	Example: checkm lineage_wf ./bins ./output
+	Examples:
+                1) generic:
+                   checkm lineage_wf ./bins ./output
+                2) to processes these genomes with 8 threads
+                   checkm lineage_wf -t 8 -x fa /path/to/source/bins /path/to/save/checkm/results
+                3) to process files of called genes in amino acid space which have the extension faa:
+                   checkm lineage_wf --genes -t 8 -x faa <bin folder> <output folder>
 	"""
-	self._run_command("checkm lineage_wf {} {}" .format(bin_folder, out_folder))	
+        command = self._generate_command({
+            'bin_folder': bin_folder,
+            'out_folder': out_folder,
+            'checkM_cmd_name': 'lineage_wf',
+            'thread': thread
+        })
+	self._run_command(command)
 	
 
     # CheckM Plots
@@ -304,7 +317,7 @@ signature of all sequences within the genome bins. This file can be creates with
         _generate_command: generate checkm command
         """
 
-        command = self.CHECKM_WORKFLOW_PATH + 'checkm '
+        command = self.CHECKM_WORKFLOW_PATH + '/checkm '
 
         cmd_name = params.get('checkM_cmd_name')
         if (cmd_name):
@@ -326,7 +339,7 @@ signature of all sequences within the genome bins. This file can be creates with
                 command += ' {}' . format(params.get('out_folder'))
 
             if params.get('thread'):
-                command += '-thread {} '.format(params.get('thread'))
+                command += ' -thread {} '.format(params.get('thread'))
 
         else:
             command = 'Invalid checkM command'
