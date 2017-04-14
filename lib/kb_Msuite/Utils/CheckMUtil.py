@@ -52,13 +52,8 @@ class CheckMUtil:
         """
         _fetch_summary: fetch summary info from output
         """
-        log('Starting fetch summary report')
-        start = '========== Job finished =========='
-        end = '========== Elapsed Time =========='
-        self.output_summary = ''
-
-        if len(output.split(start)) > 1:
-            self.output_summary = output.split(start)[1].split(end)[0]
+        log('Starting fetch checkM summary report')
+        self.output_summary = output
 
     # Lineage-specific Workflow
     def _tree(self, bin_folder, out_folder):
@@ -360,7 +355,7 @@ signature of all sequences within the genome bins. This file can be creates with
 
         if (exitCode == 0):
             self._fetch_summary(output)
-            log('Executed commend:\n{}\n'.format(command) +
+            log('Executed command:\n{}\n'.format(command) +
                 'Exit Code: {}\nOutput:\n{}'.format(exitCode, output))
         else:
             error_msg = 'Error running commend:\n{}\n'.format(command)
@@ -368,7 +363,7 @@ signature of all sequences within the genome bins. This file can be creates with
             raise ValueError(error_msg)
 
 
-    def _generate_report(self, result_directory, params):
+    def _generate_report(self, result_folder, params):
         """
         generate_report: generate summary report
         """
@@ -377,79 +372,15 @@ signature of all sequences within the genome bins. This file can be creates with
         uuid_string = str(uuid.uuid4())
         upload_message = 'Job Finished\n\n'
 
-        file_list = os.listdir(result_directory)
-        header = params.get('out_header')
+        file_list = os.listdir(result_folder)
+        header = params.get('checkM_cmd_name')
 
         upload_message += '--------------------------\nSummary:\n\n'
 
-        if header + '.summary' in file_list:
-            with open(os.path.join(result_directory, header + '.summary'), 'r') as summary_file:
-                lines = summary_file.readlines()
-                for line in lines:
-                    line_list = line.split('\t')
-                    if len(line_list) == 5:
-                        upload_message += '{:{number}} {:10} {:15} {:15} {}'.format(
-                                                            line_list[0], line_list[1],
-                                                            line_list[2], line_list[3],
-                                                            line_list[4], number=len(header)+12)
-                    elif len(line_list) == 4:
-                        upload_message += '{:{number}} {:15} {:15} {}'.format(
-                                                            line_list[0], line_list[1],
-                                                            line_list[2], line_list[3],
-                                                            number=len(header)+12)
-                    else:
-                        upload_message = upload_message.replace(
-                                                '--------------------------\nSummary:\n\n', '')
         if self.output_summary:
             upload_message += self.output_summary
         else:
             upload_message += '\n--------------------------\nOutput files for this run:\n\n'
-            if header + '.summary' in file_list:
-                upload_message += 'Summary file: {}.summary\n'.format(header)
-                file_list.remove(header + '.summary')
-
-            if header + '.abundance' in file_list:
-                upload_message += 'Genome abundance info file: {}.abundance\n'.format(header)
-                file_list.remove(header + '.abundance')
-
-            if header + '.marker' in file_list:
-                upload_message += 'Marker counts: {}.marker\n'.format(header)
-                file_list.remove(header + '.marker')
-
-            if header + '.marker_of_each_bin.tar.gz' in file_list:
-                upload_message += 'Marker genes for each bin: '
-                upload_message += '{}.marker_of_each_bin.tar.gz\n'.format(header)
-                file_list.remove(header + '.marker_of_each_bin.tar.gz')
-
-            if header + '.001.fasta' in file_list:
-                upload_message += 'Bin files: '
-                bin_file = []
-                for file_name in file_list:
-                    if re.match(header + '\.\d{3}\.fasta', file_name):
-                        bin_file.append(file_name)
-
-                bin_file.sort()
-                upload_message += '{} - {}\n'.format(bin_file[0], bin_file[-1])
-                file_list = [item for item in file_list if item not in bin_file]
-
-            if header + '.noclass' in file_list:
-                upload_message += 'Unbinned sequences: {}.noclass\n'.format(header)
-                file_list.remove(header + '.noclass')
-
-            if header + '.tooshort' in file_list:
-                upload_message += 'Short sequences: {}.tooshort\n'.format(header)
-                file_list.remove(header + '.tooshort')
-
-            if header + '.log' in file_list:
-                upload_message += 'Log file: {}.log\n'.format(header)
-                file_list.remove(header + '.log')
-
-            if header + '.marker.pdf' in file_list:
-                upload_message += 'Visualization file: {}.marker.pdf\n'.format(header)
-                file_list.remove(header + '.marker.pdf')
-
-            if file_list:
-                upload_message += 'Other files:\n{}'.format('\n'.join(file_list))
 
         log('Report message:\n{}'.format(upload_message))
 
@@ -457,7 +388,7 @@ signature of all sequences within the genome bins. This file can be creates with
               'message': upload_message,
               'summary_window_height': 166.0,
               'workspace_name': params.get('workspace_name'),
-              'report_object_name': 'kb_maxbin_report_' + uuid_string}
+              'report_object_name': 'kb_Msuite_report_' + uuid_string}
 
         kbase_report_client = KBaseReport(self.callback_url)
         output = kbase_report_client.create_extended_report(report_params)
@@ -465,6 +396,7 @@ signature of all sequences within the genome bins. This file can be creates with
         report_output = {'report_name': output['name'], 'report_ref': output['ref']}
 
         return report_output
+
 
     def __init__(self, config):
         self.callback_url = config['SDK_CALLBACK_URL']
@@ -491,33 +423,16 @@ signature of all sequences within the genome bins. This file can be creates with
 
         command = self._generate_command(params)
 
-        existing_files = []
-        for subdir, dirs, files in os.walk('./'):
-            for file in files:
-                existing_files.append(file)
-
         self._run_command(command)
 
-        new_files = []
-        for subdir, dirs, files in os.walk('./'):
-            for file in files:
-                if file not in existing_files:
-                    new_files.append(file)
-        
-        result_directory = os.path.join(self.scratch, str(uuid.uuid4()))
-        self._mkdir_p(result_directory)
+        result_folder = params.get('out_folder')
 
-        for file in new_files:
-            shutil.copy(file, result_directory)
-
-        log('Saved result files to: {}'.format(result_directory))
-        log('Generated files:\n{}'.format('\n'.join(os.listdir(result_directory))))
-
-        reportVal = self._generate_report(result_directory, params)
+        reportVal = self._generate_report(result_folder, params)
 
         returnVal = {
-            'result_directory': result_directory,
-            'obj_ref': 'obj_ref'
+            'checkM_results_folder': result_folder,
+            'report_ref': 'report_ref',
+            'report_name': 'checkM_result'
         }
 
         returnVal.update(reportVal)

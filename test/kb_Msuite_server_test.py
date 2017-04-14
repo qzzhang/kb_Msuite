@@ -136,5 +136,31 @@ class kb_MsuiteTest(unittest.TestCase):
     def test_CheckMUtil_lineage_wf(self):
         bin_folder = "/data/checkm_data/test_data"
         out_folder = "./test_results"
-        self.checkm_runner._lineage_wf(bin_folder, out_folder, 2)
+        #self.checkm_runner._lineage_wf(bin_folder, out_folder, 2)
 
+    def test_CheckMUtil_run_checkM(self):
+        bin_folder = "/data/checkm_data/test_data"
+        out_folder = "./test_results"
+        input_parameters = {
+            'bin_folder': bin_folder,
+            'out_folder': out_folder,
+            'checkM_cmd_name': 'lineage_wf',
+            'thread': 2
+        }
+        #self.checkm_runner.run_checkM(input_parameters)
+
+    def test_run_checkM(self):
+        bin_folder = "/data/checkm_data/test_data"
+        out_folder = "./test_results"
+        input_params = {
+            'bin_folder': bin_folder,
+            'out_folder': out_folder,
+            'checkM_cmd_name': 'lineage_wf',
+            'workspace_name': self.getWsName(),
+            'thread': 2
+        }
+        result = self.getImpl().run_checkM(self.getContext(), input_params)[0]
+
+        self.assertTrue('checkM_results_folder' in result)
+        self.assertTrue('report_name' in result)
+        self.assertTrue('report_ref' in result)
