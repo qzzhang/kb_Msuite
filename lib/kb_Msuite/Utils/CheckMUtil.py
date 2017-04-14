@@ -382,6 +382,8 @@ signature of all sequences within the genome bins. This file can be creates with
         else:
             upload_message += '\n--------------------------\nOutput files for this run:\n\n'
 
+        upload_message += "All checkM results of this run are saved in :" + result_folder
+
         log('Report message:\n{}'.format(upload_message))
 
         report_params = {
@@ -421,11 +423,13 @@ signature of all sequences within the genome bins. This file can be creates with
 
         self._validate_run_checkM_params(params)
 
+        result_folder = os.path.join(self.scratch, params.get('out_folder'))
+        self._mkdir_p(result_folder)
+        params['out_folder'] = result_folder
+
         command = self._generate_command(params)
 
         self._run_command(command)
-
-        result_folder = params.get('out_folder')
 
         reportVal = self._generate_report(result_folder, params)
 
