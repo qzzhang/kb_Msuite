@@ -186,6 +186,23 @@ public class KbMsuiteClient {
         return res.get(0);
     }
 
+    /**
+     * <p>Original spec-file function name: run_checkM_lineage_wf</p>
+     * <pre>
+     * </pre>
+     * @param   params   instance of type {@link us.kbase.kbmsuite.CheckMLineageWfParams CheckMLineageWfParams}
+     * @return   parameter "result" of type {@link us.kbase.kbmsuite.CheckMLineageWfResult CheckMLineageWfResult}
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public CheckMLineageWfResult runCheckMLineageWf(CheckMLineageWfParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(params);
+        TypeReference<List<CheckMLineageWfResult>> retType = new TypeReference<List<CheckMLineageWfResult>>() {};
+        List<CheckMLineageWfResult> res = caller.jsonrpcCall("kb_Msuite.run_checkM_lineage_wf", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
     public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         TypeReference<List<Map<String, Object>>> retType = new TypeReference<List<Map<String, Object>>>() {};
