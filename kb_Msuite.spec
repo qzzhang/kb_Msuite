@@ -54,4 +54,26 @@ module kb_Msuite {
 
     funcdef run_checkM(CheckMInputParams params)
         returns (CheckMResults returnVal) authentication required;
+
+
+
+    /*
+        input_ref - reference to the input Assembly or BinnedContigs data
+                    (could be expanded to include Genome objects as well)
+    */
+    typedef structure {
+        string input_ref;
+        string workspace_name;
+    } CheckMLineageWfParams;
+
+    typedef structure {
+        string report_name;
+        string report_ref;
+    } CheckMLineageWfResult;
+
+    funcdef run_checkM_lineage_wf(CheckMLineageWfParams params)
+        returns (CheckMLineageWfResult result) authentication required;
+
+
+
 };
