@@ -5,9 +5,9 @@ import os
 import uuid
 import errno
 import subprocess
-import shutil
 import sys
 import re
+import sys
 
 from KBaseReport.KBaseReportClient import KBaseReport
 #from MetagenomeUtils.MetagenomeUtilsClient import MetagenomeUtils
@@ -15,6 +15,7 @@ from KBaseReport.KBaseReportClient import KBaseReport
 def log(message, prefix_newline=False):
     """Logging function, provides a hook to suppress or redirect log messages."""
     print(('\n' if prefix_newline else '') + '{0:.2f}'.format(time.time()) + ': ' + str(message))
+
 
 
 class CheckMUtil:
@@ -48,13 +49,6 @@ class CheckMUtil:
             else:
                 raise
 
-    def _fetch_summary(self, output):
-        """
-        _fetch_summary: fetch summary info from output
-        """
-        log('Starting fetch checkM summary report')
-        self.output_summary = output
-
     # Lineage-specific Workflow
     def _tree(self, bin_folder, out_folder):
         """
@@ -79,15 +73,15 @@ class CheckMUtil:
 
     def _lineage_set(self, out_folder, marker_file):
         """
-        The checkm ‘lineage_set’ command creates a marker file indicating lineage-specific marker sets 
+        The checkm ‘lineage_set’ command creates a marker file indicating lineage-specific marker sets
         suitable for evaluating each genome. This marker file is passed to the ‘analyze’ command.
         """
 
 
     def _analyze(self, marker_file, bin_folder, out_folder):
         """
-        The checkm ‘analyze’ command takes in a marker file,  identify marker genes and estimate the 
-        completeness and contamination of each genome bin.  
+        The checkm ‘analyze’ command takes in a marker file,  identify marker genes and estimate the
+        completeness and contamination of each genome bin.
         """
 
 
@@ -100,26 +94,26 @@ class CheckMUtil:
         """
         Runs tree, lineage_set, analyze, qa
 
-	positional arguments:
-	  bin_folder--folder containing bins (fasta format)
-	  out_folder--folder to write output files
-	
-	Examples:
+    positional arguments:
+        bin_folder--folder containing bins (fasta format)
+        out_folder--folder to write output files
+
+    Examples:
                 1) generic:
                    checkm lineage_wf ./bins ./output
                 2) to processes these genomes with 8 threads
                    checkm lineage_wf -t 8 -x fa /path/to/source/bins /path/to/save/checkm/results
                 3) to process files of called genes in amino acid space which have the extension faa:
                    checkm lineage_wf --genes -t 8 -x faa <bin folder> <output folder>
-	"""
+    """
         command = self._generate_command({
             'bin_folder': bin_folder,
             'out_folder': out_folder,
             'checkM_cmd_name': 'lineage_wf',
             'thread': thread
         })
-	self._run_command(command)
-	
+        self._run_command(command)
+
 
     # CheckM Plots
     def _bin_qa_plot(self, out_folder, bin_folder, plot_folder):
@@ -138,7 +132,7 @@ red. A gene present 3 or more times may have pairs with an AAI ≥90% and pairs 
           out_folder--folder specified during qa command
           bin_folder--folder containing bins to plot (fasta format)
           plot_folder--folder to hold plots
-        
+
         optional arguments:
           image_type {eps,pdf,png,ps,svg}--desired image type (default: png)
           dpi DPI--desired DPI of output image (default: 600)
@@ -159,7 +153,7 @@ red. A gene present 3 or more times may have pairs with an AAI ≥90% and pairs 
             'plot_folder': plot_folder,
             'checkM_cmd_name': 'bin_qa_plot'
         })
-	self._run_command(command)
+        self._run_command(command)
 
 
     def _gc_plot(self, bin_folder, plot_folder, dist_value=95):
@@ -402,37 +396,42 @@ signature of all sequences within the genome bins. This file can be creates with
         _generate_command: generate checkm command
         """
 
-        command = self.CHECKM_WORKFLOW_PATH + '/checkm '
+        command = ['checkm']
 
         cmd_name = params.get('checkM_cmd_name')
         if (cmd_name):
-            command += cmd_name
+            command.append(cmd_name)
+
+            if 'reduced_tree' in params and params.get('reduced_tree') == 1:
+                command.append('--reduced_tree')
 
             if params.get('thread'):
-                command += ' -t {}'.format(params.get('thread'))
+                command.append('-t')
+                command.append(str(params.get('thread')))
 
             """ The lineage_wf workflow command
                 Example: checkm lineage_wf ./bins ./output
             """
             if(cmd_name == 'lineage_wf'):
-                command += ' {}' . format(params.get('bin_folder'))
-                command += ' {}' . format(params.get('out_folder'))
+                command.append(params.get('bin_folder'))
+                command.append(params.get('out_folder'))
 
             """ The taxonomy_wf workflow command,
                 Example: checkm taxonomy_wf domain Bacteria ./bins ./output
             """
             if(cmd_name == 'taxonomy_wf'):
-                command += ' domain {}' . format(params.get('domain'))
-                command += ' {}' . format(params.get('bin_folder'))
-                command += ' {}' . format(params.get('out_folder'))
+                command.append('domain')
+                command.append(params.get('domain'))
+                command.append(params.get('bin_folder'))
+                command.append(params.get('out_folder'))
 
             """ The bin_qa_plot command
                 Example: checkm bin_qa_plot ./output ./bins ./plots
             """
             if(cmd_name == 'bin_qa_plot'):
-                command += ' {}' . format(params.get('out_folder'))
-                command += ' {}' . format(params.get('bin_folder'))
-                command += ' {}' . format(params.get('plot_folder'))
+                command.append(params.get('out_folder'))
+                command.append(params.get('bin_folder'))
+                command.append(params.get('plot_folder'))
 
             """ The gc_plot command
                 Example: checkm gc_plot ./bins ./plots 95
@@ -527,7 +526,8 @@ signature of all sequences within the genome bins. This file can be creates with
         else:
             command = 'Unrecognizable checkM command'
 
-        log('Generated checmM command: {}'.format(command))
+
+        log('Generated checmM command: ' + ' '.join(command))
 
         return command
 
@@ -535,19 +535,18 @@ signature of all sequences within the genome bins. This file can be creates with
         """
         _run_command: run command and print result
         """
+        log('Start executing command: ' + ' '.join(command))
+        sys.stdout.flush()
 
-        log('Start executing command:\n{}'.format(command))
-        pipe = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-        output = pipe.communicate()[0]
-        exitCode = pipe.returncode
+        p = subprocess.Popen(command, cwd=self.scratch, shell=False)
+        exitCode = p.wait()
 
         if (exitCode == 0):
-            self._fetch_summary(output)
             log('Executed command:\n{}\n'.format(command) +
-                'Exit Code: {}\nOutput:\n{}'.format(exitCode, output))
+                'Exit Code: {}\n'.format(exitCode))
         else:
-            error_msg = 'Error running commend:\n{}\n'.format(command)
-            error_msg += 'Exit Code: {}\nOutput:\n{}'.format(exitCode, output)
+            error_msg = 'Error running command:\n{}\n'.format(command)
+            error_msg += 'Exit Code: {}\n'.format(exitCode)
             raise ValueError(error_msg)
 
 
@@ -565,10 +564,7 @@ signature of all sequences within the genome bins. This file can be creates with
 
         upload_message += '--------------------------\nSummary:\n\n'
 
-        if self.output_summary:
-            upload_message += self.output_summary
-        else:
-            upload_message += '\n--------------------------\nOutput files for this run:\n\n'
+        upload_message += '\n--------------------------\nOutput files for this run:\n\n'
 
         upload_message += "All checkM results of this run are saved in :" + result_folder
 
@@ -600,7 +596,7 @@ signature of all sequences within the genome bins. This file can be creates with
 
         required params:
         bin_folder: folder path that holds all putative genome files with (fna as the file extension) to be checkM-ed
-        out_folder: folder path that holds all the checkm workflow results 
+        out_folder: folder path that holds all the checkm workflow results
         checkM_cmd_name: name of the CheckM command,e.g., lineage_wf or taxonomy_wf
         workspace_name: the name of the workspace it gets saved to.
 
@@ -631,4 +627,3 @@ signature of all sequences within the genome bins. This file can be creates with
         returnVal.update(reportVal)
 
         return returnVal
-

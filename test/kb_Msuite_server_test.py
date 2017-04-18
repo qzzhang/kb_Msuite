@@ -4,6 +4,7 @@ import os  # noqa: F401
 import json  # noqa: F401
 import time
 import requests
+import shutil
 
 from os import environ
 try:
@@ -13,7 +14,11 @@ except:
 
 from pprint import pprint  # noqa: F401
 
-from biokbase.workspace.client import Workspace as workspaceService
+from Workspace.WorkspaceClient import Workspace as workspaceService
+
+from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
+from MetagenomeUtils.MetagenomeUtilsClient import MetagenomeUtils
+
 from kb_Msuite.kb_MsuiteImpl import kb_Msuite
 from kb_Msuite.kb_MsuiteServer import MethodContext
 from kb_Msuite.authclient import KBaseAuth as _KBaseAuth
@@ -52,23 +57,25 @@ class kb_MsuiteTest(unittest.TestCase):
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
         cls.checkm_runner = CheckMUtil(cls.cfg)
 
+        suffix = int(time.time() * 1000)
+        cls.wsName = "test_kb_Msuite_" + str(suffix)
+        cls.ws_info = cls.wsClient.create_workspace({'workspace': cls.wsName})
+        cls.au = AssemblyUtil(os.environ['SDK_CALLBACK_URL'])
+        cls.mu = MetagenomeUtils(os.environ['SDK_CALLBACK_URL'])
+
+        #cls.assembly_ref1 = '19840/1/1'
+        #cls.binned_contigs_ref1 = '19840/2/1'
+        cls.prepare_data()
+
     @classmethod
     def tearDownClass(cls):
-        if hasattr(cls, 'wsName'):
-            cls.wsClient.delete_workspace({'workspace': cls.wsName})
-            print('Test workspace was deleted')
+        #if hasattr(cls, 'wsName'):
+        #    cls.wsClient.delete_workspace({'workspace': cls.wsName})
+        #    print('Test workspace was deleted')
+        pass
 
     def getWsClient(self):
         return self.__class__.wsClient
-
-    def getWsName(self):
-        if hasattr(self.__class__, 'wsName'):
-            return self.__class__.wsName
-        suffix = int(time.time() * 1000)
-        wsName = "test_kb_Msuite_" + str(suffix)
-        ret = self.getWsClient().create_workspace({'workspace': wsName})  # noqa
-        self.__class__.wsName = wsName
-        return wsName
 
     def getImpl(self):
         return self.__class__.serviceImpl
@@ -76,28 +83,57 @@ class kb_MsuiteTest(unittest.TestCase):
     def getContext(self):
         return self.__class__.ctx
 
-    # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
-    def test_your_method(self):
-        # Prepare test objects in workspace if needed using
-        # self.getWsClient().save_objects({'workspace': self.getWsName(),
-        #                                  'objects': []})
-        #
-        # Run your method by
-        # ret = self.getImpl().your_method(self.getContext(), parameters...)
-        #
-        # Check returned data with
-        # self.assertEqual(ret[...], ...) or other unittest methods
-        pass
 
-        # Prepare test objects in workspace if needed using
-        # self.getWsClient().save_objects({'workspace': self.getWsName(),
-        #                                  'objects': []})
-        #
-        # Run your method by
-        # ret = self.getImpl().your_method(self.getContext(), parameters...)
-        #
-        # Check returned data with
-        # self.assertEqual(ret[...], ...) or other unittest methods
+    @classmethod
+    def prepare_data(cls):
+        test_directory_name = 'test_kb_Msuite'
+        cls.test_directory_path = os.path.join(cls.scratch, test_directory_name)
+        os.makedirs(cls.test_directory_path)
+
+        # first build the example Assembly
+        cls.assembly_filename = 'assembly.fasta'
+        cls.assembly_fasta_file_path = os.path.join(cls.scratch, cls.assembly_filename)
+        shutil.copy(os.path.join("data", cls.assembly_filename), cls.assembly_fasta_file_path)
+        assembly_params = {'file': {'path': cls.assembly_fasta_file_path},
+                           'workspace_name': cls.ws_info[1],
+                           'assembly_name': 'MyMetagenomeAssembly'
+                           }
+        cls.assembly_ref1 = cls.au.save_assembly_from_fasta(assembly_params)
+        pprint('Saved Assembly: ' + cls.assembly_ref1)
+
+        # next save the bins
+        cls.binned_contigs_dir_name = 'binned_contigs'
+        cls.binned_contigs_dir_path = os.path.join(cls.scratch, cls.binned_contigs_dir_name)
+        shutil.copytree(os.path.join("data", cls.binned_contigs_dir_name), cls.binned_contigs_dir_path)
+
+        binned_contigs_params = {'file_directory': cls.binned_contigs_dir_path,
+                                 'workspace_name': cls.ws_info[1],
+                                 'assembly_ref': cls.assembly_ref1,
+                                 'binned_contig_name': 'MyBins'
+                                 }
+        cls.binned_contigs_ref1 = cls.mu.file_to_binned_contigs(binned_contigs_params)['binned_contig_obj_ref']
+        pprint('Saved BinnedContigs: ' + cls.binned_contigs_ref1)
+
+
+    def test_checkM_app(self):
+
+        # run checkM lineage_wf app on a single assembly
+        params = {
+            'workspace_name': self.ws_info[1],
+            'input_ref': self.assembly_ref1
+        }
+        result = self.getImpl().run_checkM_lineage_wf(self.getContext(), params)
+        print('RESULT:')
+        pprint(result)
+
+        # run checkM lineage_wf app on BinnedContigs
+        params = {
+            'workspace_name': self.ws_info[1],
+            'input_ref': self.binned_contigs_ref1
+        }
+        result = self.getImpl().run_checkM_lineage_wf(self.getContext(), params)
+        print('RESULT:')
+        pprint(result)
 
 
     def test_CheckMUtil_generate_command(self):
@@ -106,20 +142,6 @@ class kb_MsuiteTest(unittest.TestCase):
             'out_folder': 'my_out_folder',
             'checkM_cmd_name': 'lineage_wf'
         }
-
-        #expect_command = '/kb/deployment/bin/CheckMBin/checkm ' + 'lineage_wf '
-        expect_command = '/usr/local/bin/checkm ' + 'lineage_wf '
-        expect_command += 'my_bin_folder my_out_folder'
-        command = self.checkm_runner._generate_command(input_params)
-        self.assertEquals(command, expect_command)
-
-        input_params = {
-            'bin_folder': 'my_bin_folder',
-            'out_folder': 'my_out_folder',
-            'checkM_cmd_name': 'lineage_wf',
-            'thread': 2
-        }
-
         #expect_command = '/kb/deployment/bin/CheckMBin/checkm ' + 'lineage_wf '
         expect_command = '/usr/local/bin/checkm ' + 'lineage_wf '
         expect_command += ' -t 2 '
