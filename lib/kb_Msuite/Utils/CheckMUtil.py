@@ -150,8 +150,17 @@ red. A gene present 3 or more times may have pairs with an AAI ≥90% and pairs 
           ignore_hetero--do not plot strain heterogeneity
           aai_strain AAI_STRAIN--AAI threshold used to identify strain heterogeneity (default: 0.9)
           q, --quiet--suppress console output
+
+          Example checkm bin_qa_plot ./output ./bins ./plots
         """
-	pass
+        command = self._generate_command({
+            'bin_folder': bin_folder,
+            'out_folder': out_folder,
+            'plot_folder': plot_folder,
+            'checkM_cmd_name': 'bin_qa_plot'
+        })
+	self._run_command(command)
+
 
     def _gc_plot(self, bin_folder, plot_folder, dist_value):
         """
@@ -336,6 +345,14 @@ signature of all sequences within the genome bins. This file can be creates with
                 command += ' {}' . format(params.get('bin_folder'))
                 command += ' {}' . format(params.get('out_folder'))
 
+            """ The bin_qa_plot command
+                Example: checkm bin_qa_plot ./output ./bins ./plots
+            """
+            if(cmd_name == 'bin_qa_plot'):
+                command += ' {}' . format(params.get('out_folder'))
+                command += ' {}' . format(params.get('bin_folder'))
+                command += ' {}' . format(params.get('plot_folder'))
+
         else:
             command = 'Invalid checkM command'
 
@@ -390,7 +407,8 @@ signature of all sequences within the genome bins. This file can be creates with
               'message': upload_message,
               'summary_window_height': 166.0,
               'workspace_name': params.get('workspace_name'),
-              'report_object_name': 'kb_Msuite_report_' + uuid_string}
+              'report_object_name': 'kb_Msuite_report_' + uuid_string
+        }
 
         kbase_report_client = KBaseReport(self.callback_url)
         output = kbase_report_client.create_extended_report(report_params)
