@@ -63,9 +63,9 @@ class kb_MsuiteTest(unittest.TestCase):
         cls.au = AssemblyUtil(os.environ['SDK_CALLBACK_URL'])
         cls.mu = MetagenomeUtils(os.environ['SDK_CALLBACK_URL'])
 
-        cls.assembly_ref1 = '19840/1/1'
-        cls.binned_contigs_ref1 = '19840/2/1'
-        #cls.prepare_data()
+        #cls.assembly_ref1 = '19840/1/1'
+        #cls.binned_contigs_ref1 = '19840/2/1'
+        cls.prepare_data()
 
     @classmethod
     def tearDownClass(cls):

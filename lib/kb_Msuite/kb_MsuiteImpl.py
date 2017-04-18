@@ -124,7 +124,8 @@ Parks DH, Imelfort M, Skennerton CT, Hugenholtz P, Tyson GW. 2015. CheckM: asses
                          'out_folder': 'output_' + os.path.basename(input_dir['input_dir']),
                          'checkM_cmd_name': 'lineage_wf',
                          'workspace_name': params['workspace_name'],
-                         'thread': 2
+                         'thread': 2,
+                         'reduced_tree': 1
                          }
         checkM_runner = CheckMUtil(self.config)
         result = checkM_runner.run_checkM(checkM_params)
