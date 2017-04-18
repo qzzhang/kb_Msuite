@@ -131,19 +131,12 @@ sub new
 $params is a kb_Msuite.CheckMInputParams
 $returnVal is a kb_Msuite.CheckMResults
 CheckMInputParams is a reference to a hash where the following keys are defined:
-	checkM_workflow_name has a value which is a string
-	putative_genomes_folder has a value which is a string
-	file_extension has a value which is a string
+	bin_folder has a value which is a string
+	out_folder has a value which is a string
+	checkM_cmd_name has a value which is a string
 	workspace_name has a value which is a string
+	file_extension has a value which is a string
 	thread has a value which is an int
-	external_genes has a value which is a kb_Msuite.boolean
-	external_genes_file has a value which is a string
-	reassembly has a value which is a kb_Msuite.boolean
-	prob_threshold has a value which is a float
-	markerset has a value which is an int
-	min_contig_length has a value which is an int
-	plotmarker has a value which is a kb_Msuite.boolean
-boolean is an int
 CheckMResults is a reference to a hash where the following keys are defined:
 	checkM_results_folder has a value which is a string
 	report_name has a value which is a string
@@ -158,19 +151,12 @@ CheckMResults is a reference to a hash where the following keys are defined:
 $params is a kb_Msuite.CheckMInputParams
 $returnVal is a kb_Msuite.CheckMResults
 CheckMInputParams is a reference to a hash where the following keys are defined:
-	checkM_workflow_name has a value which is a string
-	putative_genomes_folder has a value which is a string
-	file_extension has a value which is a string
+	bin_folder has a value which is a string
+	out_folder has a value which is a string
+	checkM_cmd_name has a value which is a string
 	workspace_name has a value which is a string
+	file_extension has a value which is a string
 	thread has a value which is an int
-	external_genes has a value which is a kb_Msuite.boolean
-	external_genes_file has a value which is a string
-	reassembly has a value which is a kb_Msuite.boolean
-	prob_threshold has a value which is a float
-	markerset has a value which is an int
-	min_contig_length has a value which is an int
-	plotmarker has a value which is a kb_Msuite.boolean
-boolean is an int
 CheckMResults is a reference to a hash where the following keys are defined:
 	checkM_results_folder has a value which is a string
 	report_name has a value which is a string
@@ -233,6 +219,100 @@ CheckMResults is a reference to a hash where the following keys are defined:
     }
 }
  
+
+
+=head2 run_checkM_lineage_wf
+
+  $result = $obj->run_checkM_lineage_wf($params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$params is a kb_Msuite.CheckMLineageWfParams
+$result is a kb_Msuite.CheckMLineageWfResult
+CheckMLineageWfParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+	workspace_name has a value which is a string
+CheckMLineageWfResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$params is a kb_Msuite.CheckMLineageWfParams
+$result is a kb_Msuite.CheckMLineageWfResult
+CheckMLineageWfParams is a reference to a hash where the following keys are defined:
+	input_ref has a value which is a string
+	workspace_name has a value which is a string
+CheckMLineageWfResult is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub run_checkM_lineage_wf
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function run_checkM_lineage_wf (received $n, expecting 1)");
+    }
+    {
+	my($params) = @args;
+
+	my @_bad_arguments;
+        (ref($params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"params\" (value was \"$params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to run_checkM_lineage_wf:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'run_checkM_lineage_wf');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "kb_Msuite.run_checkM_lineage_wf",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'run_checkM_lineage_wf',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method run_checkM_lineage_wf",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'run_checkM_lineage_wf',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -276,16 +356,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'run_checkM',
+                method_name => 'run_checkM_lineage_wf',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method run_checkM",
+            error => "Error invoking method run_checkM_lineage_wf",
             status_line => $self->{client}->status_line,
-            method_name => 'run_checkM',
+            method_name => 'run_checkM_lineage_wf',
         );
     }
 }
@@ -389,31 +469,14 @@ a string
 =item Description
 
 required params:
-putative_genomes_folder: folder path that holds all putative genome files with (fa as the file extension) to be checkM-ed
-checkM_workflow_name: name of the CheckM workflow,e.g., lineage_wf or taxonomy_wf
-file_extension: the extension of the putative genome file, should be "fna"
-
-contig_file: contig file path/shock_id in File structure
-out_header: output file header
+bin_folder: folder path that holds all putative genome files with (fa as the file extension) to be checkM-ed
+out_folder: folder path that holds all putative genome files with (fa as the file extension) to be checkM-ed
+checkM_cmd_name: name of the CheckM workflow,e.g., lineage_wf or taxonomy_wf
 workspace_name: the name of the workspace it gets saved to.
 
-semi-required: at least one of the following parameters is needed
-abund_list: contig abundance file(s)/shock_id(s)
-reads_list: reads file(s)/shock_id(s) in fasta or fastq format
-
 optional params:
+file_extension: the extension of the putative genome file, should be "fna"
 thread: number of threads; default 1
-external_genes: indicating an external gene call instead of using prodigal, default 0
-external_genes_file: the file containing genes for gene call, default "" 
-
-reassembly: specify this option if you want to reassemble the bins.
-            note that at least one reads file needs to be designated.
-prob_threshold: minimum probability for EM algorithm; default 0.8
-markerset: choose between 107 marker genes by default or 40 marker genes
-min_contig_length: minimum contig length; default 1000
-plotmarker: specify this option if you want to plot the markers in each contig
-
-ref: https://github.com/Ecogenomics/CheckM/wiki/Installation#how-to-install-checkm
 
 
 =item Definition
@@ -422,18 +485,12 @@ ref: https://github.com/Ecogenomics/CheckM/wiki/Installation#how-to-install-chec
 
 <pre>
 a reference to a hash where the following keys are defined:
-checkM_workflow_name has a value which is a string
-putative_genomes_folder has a value which is a string
-file_extension has a value which is a string
+bin_folder has a value which is a string
+out_folder has a value which is a string
+checkM_cmd_name has a value which is a string
 workspace_name has a value which is a string
+file_extension has a value which is a string
 thread has a value which is an int
-external_genes has a value which is a kb_Msuite.boolean
-external_genes_file has a value which is a string
-reassembly has a value which is a kb_Msuite.boolean
-prob_threshold has a value which is a float
-markerset has a value which is an int
-min_contig_length has a value which is an int
-plotmarker has a value which is a kb_Msuite.boolean
 
 </pre>
 
@@ -442,18 +499,12 @@ plotmarker has a value which is a kb_Msuite.boolean
 =begin text
 
 a reference to a hash where the following keys are defined:
-checkM_workflow_name has a value which is a string
-putative_genomes_folder has a value which is a string
-file_extension has a value which is a string
+bin_folder has a value which is a string
+out_folder has a value which is a string
+checkM_cmd_name has a value which is a string
 workspace_name has a value which is a string
+file_extension has a value which is a string
 thread has a value which is an int
-external_genes has a value which is a kb_Msuite.boolean
-external_genes_file has a value which is a string
-reassembly has a value which is a kb_Msuite.boolean
-prob_threshold has a value which is a float
-markerset has a value which is an int
-min_contig_length has a value which is an int
-plotmarker has a value which is a kb_Msuite.boolean
 
 
 =end text
@@ -493,6 +544,76 @@ report_ref has a value which is a string
 
 a reference to a hash where the following keys are defined:
 checkM_results_folder has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 CheckMLineageWfParams
+
+=over 4
+
+
+
+=item Description
+
+input_ref - reference to the input Assembly or BinnedContigs data
+            (could be expanded to include Genome objects as well)
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+input_ref has a value which is a string
+workspace_name has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+input_ref has a value which is a string
+workspace_name has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 CheckMLineageWfResult
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
 report_name has a value which is a string
 report_ref has a value which is a string
 

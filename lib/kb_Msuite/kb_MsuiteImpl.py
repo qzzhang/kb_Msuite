@@ -32,8 +32,8 @@ Parks DH, Imelfort M, Skennerton CT, Hugenholtz P, Tyson GW. 2015. CheckM: asses
     # the latter method is running.
     ######################################### noqa
     VERSION = "0.0.1"
-    GIT_URL = "https://github.com/qzzhang/kb_Msuite"
-    GIT_COMMIT_HASH = "6c8f02a7930376aa731199a3e5988f4461703ed0"
+    GIT_URL = "git@github.com:kbaseapps/kb_Msuite"
+    GIT_COMMIT_HASH = "2d550f0b9b1eee2a9c9a131c887d84d3b3a9040f"
 
     #BEGIN_CLASS_HEADER
     #END_CLASS_HEADER
@@ -91,6 +91,28 @@ Parks DH, Imelfort M, Skennerton CT, Hugenholtz P, Tyson GW. 2015. CheckM: asses
                              'returnVal is not type dict as required.')
         # return the results
         return [returnVal]
+
+    def run_checkM_lineage_wf(self, ctx, params):
+        """
+        :param params: instance of type "CheckMLineageWfParams" (input_ref -
+           reference to the input Assembly or BinnedContigs data (could be
+           expanded to include Genome objects as well)) -> structure:
+           parameter "input_ref" of String, parameter "workspace_name" of
+           String
+        :returns: instance of type "CheckMLineageWfResult" -> structure:
+           parameter "report_name" of String, parameter "report_ref" of String
+        """
+        # ctx is the context object
+        # return variables are: result
+        #BEGIN run_checkM_lineage_wf
+        #END run_checkM_lineage_wf
+
+        # At some point might do deeper type checking...
+        if not isinstance(result, dict):
+            raise ValueError('Method run_checkM_lineage_wf return value ' +
+                             'result is not type dict as required.')
+        # return the results
+        return [result]
     def status(self, ctx):
         #BEGIN_STATUS
         returnVal = {'state': "OK",
