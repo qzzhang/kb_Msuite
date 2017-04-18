@@ -3,7 +3,10 @@
 import os
 import json
 
+from pprint import pprint
+
 from kb_Msuite.Utils.CheckMUtil import CheckMUtil
+from kb_Msuite.Utils.DataStagingUtils import DataStagingUtils
 #END_HEADER
 
 
@@ -74,8 +77,8 @@ Parks DH, Imelfort M, Skennerton CT, Hugenholtz P, Tyson GW. 2015. CheckM: asses
         # ctx is the context object
         # return variables are: returnVal
         #BEGIN run_checkM
-        print '--->\nRunning kb_Msuite.run_checkM\nparams:'
-        print json.dumps(params, indent=1)
+        print('--->\nRunning kb_Msuite.run_checkM\nparams:')
+        print(json.dumps(params, indent=1))
 
         for key, value in params.iteritems():
             if isinstance(value, basestring):
@@ -105,6 +108,23 @@ Parks DH, Imelfort M, Skennerton CT, Hugenholtz P, Tyson GW. 2015. CheckM: asses
         # ctx is the context object
         # return variables are: result
         #BEGIN run_checkM_lineage_wf
+        print('--->\nRunning kb_Msuite.run_checkM_lineage_wf\nparams:')
+        print(json.dumps(params, indent=1))
+
+        dsu = DataStagingUtils(self.config)
+        if 'input_ref' not in params:
+          raise ValueError('input_ref field was not set in params for run_checkM_lineage_wf')
+        input_dir = dsu.stage_input(params['input_ref'], '.fna')
+
+        pprint('Staged input directory: ' + input_dir['input_dir'])
+
+        checkM_params = {'bin_folder': input_dir['input_dir'],
+                         'out_folder': 'output_' + os.path.basename(input_dir['input_dir']),
+                         'checkM_cmd_name': 'lineage_wf'
+                         }
+
+        checkM_runner = CheckMUtil(self.config)
+        result = checkM_runner.run_checkM(checkM_params)
         #END run_checkM_lineage_wf
 
         # At some point might do deeper type checking...

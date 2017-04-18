@@ -4,6 +4,7 @@ import os  # noqa: F401
 import json  # noqa: F401
 import time
 import requests
+import shutil
 
 from os import environ
 try:
@@ -13,7 +14,11 @@ except:
 
 from pprint import pprint  # noqa: F401
 
-from biokbase.workspace.client import Workspace as workspaceService
+from Workspace.WorkspaceClient import Workspace as workspaceService
+
+from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
+from MetagenomeUtils.MetagenomeUtilsClient import MetagenomeUtils
+
 from kb_Msuite.kb_MsuiteImpl import kb_Msuite
 from kb_Msuite.kb_MsuiteServer import MethodContext
 from kb_Msuite.authclient import KBaseAuth as _KBaseAuth
@@ -52,6 +57,14 @@ class kb_MsuiteTest(unittest.TestCase):
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
         cls.checkm_runner = CheckMUtil(cls.cfg)
 
+        suffix = int(time.time() * 1000)
+        wsName = "test_kb_Msuite_" + str(suffix)
+        cls.ws_info = cls.wsClient.create_workspace({'workspace': wsName})
+        cls.au = AssemblyUtil(os.environ['SDK_CALLBACK_URL'])
+        cls.mu = MetagenomeUtils(os.environ['SDK_CALLBACK_URL'])
+
+        cls.prepare_data()
+
     @classmethod
     def tearDownClass(cls):
         if hasattr(cls, 'wsName'):
@@ -61,43 +74,11 @@ class kb_MsuiteTest(unittest.TestCase):
     def getWsClient(self):
         return self.__class__.wsClient
 
-    def getWsName(self):
-        if hasattr(self.__class__, 'wsName'):
-            return self.__class__.wsName
-        suffix = int(time.time() * 1000)
-        wsName = "test_kb_Msuite_" + str(suffix)
-        ret = self.getWsClient().create_workspace({'workspace': wsName})  # noqa
-        self.__class__.wsName = wsName
-        return wsName
-
     def getImpl(self):
         return self.__class__.serviceImpl
 
     def getContext(self):
         return self.__class__.ctx
-
-    # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
-    def test_your_method(self):
-        # Prepare test objects in workspace if needed using
-        # self.getWsClient().save_objects({'workspace': self.getWsName(),
-        #                                  'objects': []})
-        #
-        # Run your method by
-        # ret = self.getImpl().your_method(self.getContext(), parameters...)
-        #
-        # Check returned data with
-        # self.assertEqual(ret[...], ...) or other unittest methods
-        pass
-
-        # Prepare test objects in workspace if needed using
-        # self.getWsClient().save_objects({'workspace': self.getWsName(),
-        #                                  'objects': []})
-        #
-        # Run your method by
-        # ret = self.getImpl().your_method(self.getContext(), parameters...)
-        #
-        # Check returned data with
-        # self.assertEqual(ret[...], ...) or other unittest methods
 
 
     def test_CheckMUtil_generate_command(self):
@@ -106,20 +87,6 @@ class kb_MsuiteTest(unittest.TestCase):
             'out_folder': 'my_out_folder',
             'checkM_cmd_name': 'lineage_wf'
         }
-
-        #expect_command = '/kb/deployment/bin/CheckMBin/checkm ' + 'lineage_wf '
-        expect_command = '/usr/local/bin/checkm ' + 'lineage_wf '
-        expect_command += 'my_bin_folder my_out_folder'
-        command = self.checkm_runner._generate_command(input_params)
-        self.assertEquals(command, expect_command)
-
-        input_params = {
-            'bin_folder': 'my_bin_folder',
-            'out_folder': 'my_out_folder',
-            'checkM_cmd_name': 'lineage_wf',
-            'thread': 2
-        }
-
         #expect_command = '/kb/deployment/bin/CheckMBin/checkm ' + 'lineage_wf '
         expect_command = '/usr/local/bin/checkm ' + 'lineage_wf '
         expect_command += ' -t 2 '

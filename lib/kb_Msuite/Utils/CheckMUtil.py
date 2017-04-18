@@ -327,6 +327,8 @@ signature of all sequences within the genome bins. This file can be creates with
         if (cmd_name):
             command += cmd_name
 
+            command += ' --reduced_tree'
+
             if params.get('thread'):
                 command += ' -t {}'.format(params.get('thread'))
 
@@ -355,6 +357,7 @@ signature of all sequences within the genome bins. This file can be creates with
 
         else:
             command = 'Invalid checkM command'
+
 
         log('Generated checmM command: {}'.format(command))
 
