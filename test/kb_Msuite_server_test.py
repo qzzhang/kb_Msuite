@@ -58,18 +58,21 @@ class kb_MsuiteTest(unittest.TestCase):
         cls.checkm_runner = CheckMUtil(cls.cfg)
 
         suffix = int(time.time() * 1000)
-        wsName = "test_kb_Msuite_" + str(suffix)
-        cls.ws_info = cls.wsClient.create_workspace({'workspace': wsName})
+        cls.wsName = "test_kb_Msuite_" + str(suffix)
+        cls.ws_info = cls.wsClient.create_workspace({'workspace': cls.wsName})
         cls.au = AssemblyUtil(os.environ['SDK_CALLBACK_URL'])
         cls.mu = MetagenomeUtils(os.environ['SDK_CALLBACK_URL'])
 
-        cls.prepare_data()
+        cls.assembly_ref1 = '19840/1/1'
+        cls.binned_contigs_ref1 = '19840/2/1'
+        #cls.prepare_data()
 
     @classmethod
     def tearDownClass(cls):
-        if hasattr(cls, 'wsName'):
-            cls.wsClient.delete_workspace({'workspace': cls.wsName})
-            print('Test workspace was deleted')
+        #if hasattr(cls, 'wsName'):
+        #    cls.wsClient.delete_workspace({'workspace': cls.wsName})
+        #    print('Test workspace was deleted')
+        pass
 
     def getWsClient(self):
         return self.__class__.wsClient
@@ -79,6 +82,58 @@ class kb_MsuiteTest(unittest.TestCase):
 
     def getContext(self):
         return self.__class__.ctx
+
+
+    @classmethod
+    def prepare_data(cls):
+        test_directory_name = 'test_kb_Msuite'
+        cls.test_directory_path = os.path.join(cls.scratch, test_directory_name)
+        os.makedirs(cls.test_directory_path)
+
+        # first build the example Assembly
+        cls.assembly_filename = 'assembly.fasta'
+        cls.assembly_fasta_file_path = os.path.join(cls.scratch, cls.assembly_filename)
+        shutil.copy(os.path.join("data", cls.assembly_filename), cls.assembly_fasta_file_path)
+        assembly_params = {'file': {'path': cls.assembly_fasta_file_path},
+                           'workspace_name': cls.ws_info[1],
+                           'assembly_name': 'MyMetagenomeAssembly'
+                           }
+        cls.assembly_ref1 = cls.au.save_assembly_from_fasta(assembly_params)
+        pprint('Saved Assembly: ' + cls.assembly_ref1)
+
+        # next save the bins
+        cls.binned_contigs_dir_name = 'binned_contigs'
+        cls.binned_contigs_dir_path = os.path.join(cls.scratch, cls.binned_contigs_dir_name)
+        shutil.copytree(os.path.join("data", cls.binned_contigs_dir_name), cls.binned_contigs_dir_path)
+
+        binned_contigs_params = {'file_directory': cls.binned_contigs_dir_path,
+                                 'workspace_name': cls.ws_info[1],
+                                 'assembly_ref': cls.assembly_ref1,
+                                 'binned_contig_name': 'MyBins'
+                                 }
+        cls.binned_contigs_ref1 = cls.mu.file_to_binned_contigs(binned_contigs_params)['binned_contig_obj_ref']
+        pprint('Saved BinnedContigs: ' + cls.binned_contigs_ref1)
+
+
+    def test_checkM_app(self):
+
+        # run checkM lineage_wf app on a single assembly
+        params = {
+            'workspace_name': self.ws_info[1],
+            'input_ref': self.assembly_ref1
+        }
+        result = self.getImpl().run_checkM_lineage_wf(self.getContext(), params)
+        print('RESULT:')
+        pprint(result)
+
+        # run checkM lineage_wf app on BinnedContigs
+        params = {
+            'workspace_name': self.ws_info[1],
+            'input_ref': self.binned_contigs_ref1
+        }
+        result = self.getImpl().run_checkM_lineage_wf(self.getContext(), params)
+        print('RESULT:')
+        pprint(result)
 
 
     def test_CheckMUtil_generate_command(self):

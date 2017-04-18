@@ -111,18 +111,21 @@ Parks DH, Imelfort M, Skennerton CT, Hugenholtz P, Tyson GW. 2015. CheckM: asses
         print('--->\nRunning kb_Msuite.run_checkM_lineage_wf\nparams:')
         print(json.dumps(params, indent=1))
 
-        dsu = DataStagingUtils(self.config)
         if 'input_ref' not in params:
           raise ValueError('input_ref field was not set in params for run_checkM_lineage_wf')
-        input_dir = dsu.stage_input(params['input_ref'], '.fna')
+        if 'workspace_name' not in params:
+          raise ValueError('workspace_name field was not set in params for run_checkM_lineage_wf')
+        dsu = DataStagingUtils(self.config)
+        input_dir = dsu.stage_input(params['input_ref'], 'fna')
 
         pprint('Staged input directory: ' + input_dir['input_dir'])
 
         checkM_params = {'bin_folder': input_dir['input_dir'],
                          'out_folder': 'output_' + os.path.basename(input_dir['input_dir']),
-                         'checkM_cmd_name': 'lineage_wf'
+                         'checkM_cmd_name': 'lineage_wf',
+                         'workspace_name': params['workspace_name'],
+                         'thread': 2
                          }
-
         checkM_runner = CheckMUtil(self.config)
         result = checkM_runner.run_checkM(checkM_params)
         #END run_checkM_lineage_wf

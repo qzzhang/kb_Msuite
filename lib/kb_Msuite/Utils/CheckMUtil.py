@@ -17,6 +17,7 @@ def log(message, prefix_newline=False):
     print(('\n' if prefix_newline else '') + '{0:.2f}'.format(time.time()) + ': ' + str(message))
 
 
+
 class CheckMUtil:
     #CHECKM_WORKFLOW_PATH = '/kb/deployment/bin/CheckMBin'
     CHECKM_WORKFLOW_PATH = '/usr/local/bin'
@@ -47,13 +48,6 @@ class CheckMUtil:
                 pass
             else:
                 raise
-
-    def _fetch_summary(self, output):
-        """
-        _fetch_summary: fetch summary info from output
-        """
-        log('Starting fetch checkM summary report')
-        self.output_summary = output
 
     # Lineage-specific Workflow
     def _tree(self, bin_folder, out_folder):
@@ -321,45 +315,48 @@ signature of all sequences within the genome bins. This file can be creates with
         _generate_command: generate checkm command
         """
 
-        command = self.CHECKM_WORKFLOW_PATH + '/checkm '
+        command = ['checkm']
 
         cmd_name = params.get('checkM_cmd_name')
         if (cmd_name):
-            command += cmd_name
+            command.append(cmd_name)
 
-            command += ' --reduced_tree'
+            if 'reduced_tree' in params and params.get('reduced_tree') == 1:
+                command.append('--reduced_tree')
 
             if params.get('thread'):
-                command += ' -t {}'.format(params.get('thread'))
+                command.append('-t')
+                command.append(str(params.get('thread')))
 
             """ The lineage_wf workflow command
                 Example: checkm lineage_wf ./bins ./output
             """
             if(cmd_name == 'lineage_wf'):
-                command += ' {}' . format(params.get('bin_folder'))
-                command += ' {}' . format(params.get('out_folder'))
+                command.append(params.get('bin_folder'))
+                command.append(params.get('out_folder'))
 
             """ The taxonomy_wf workflow command,
                 Example: checkm taxonomy_wf domain Bacteria ./bins ./output
             """
             if(cmd_name == 'taxonomy_wf'):
-                command += ' domain {}' . format(params.get('domain'))
-                command += ' {}' . format(params.get('bin_folder'))
-                command += ' {}' . format(params.get('out_folder'))
+                command.append('domain')
+                command.append(params.get('domain'))
+                command.append(params.get('bin_folder'))
+                command.append(params.get('out_folder'))
 
             """ The bin_qa_plot command
                 Example: checkm bin_qa_plot ./output ./bins ./plots
             """
             if(cmd_name == 'bin_qa_plot'):
-                command += ' {}' . format(params.get('out_folder'))
-                command += ' {}' . format(params.get('bin_folder'))
-                command += ' {}' . format(params.get('plot_folder'))
+                command.append(params.get('out_folder'))
+                command.append(params.get('bin_folder'))
+                command.append(params.get('plot_folder'))
 
         else:
             command = 'Invalid checkM command'
 
 
-        log('Generated checmM command: {}'.format(command))
+        log('Generated checmM command: ' + ' '.join(command))
 
         return command
 
@@ -367,19 +364,17 @@ signature of all sequences within the genome bins. This file can be creates with
         """
         _run_command: run command and print result
         """
+        log('Start executing command: ' + ' '.join(command))
 
-        log('Start executing command:\n{}'.format(command))
-        pipe = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-        output = pipe.communicate()[0]
-        exitCode = pipe.returncode
+        p = subprocess.Popen(command, cwd=self.scratch, shell=False)
+        exitCode = p.wait()
 
         if (exitCode == 0):
-            self._fetch_summary(output)
             log('Executed command:\n{}\n'.format(command) +
-                'Exit Code: {}\nOutput:\n{}'.format(exitCode, output))
+                'Exit Code: {}\n'.format(exitCode))
         else:
-            error_msg = 'Error running commend:\n{}\n'.format(command)
-            error_msg += 'Exit Code: {}\nOutput:\n{}'.format(exitCode, output)
+            error_msg = 'Error running command:\n{}\n'.format(command)
+            error_msg += 'Exit Code: {}\n'.format(exitCode)
             raise ValueError(error_msg)
 
 
@@ -397,10 +392,7 @@ signature of all sequences within the genome bins. This file can be creates with
 
         upload_message += '--------------------------\nSummary:\n\n'
 
-        if self.output_summary:
-            upload_message += self.output_summary
-        else:
-            upload_message += '\n--------------------------\nOutput files for this run:\n\n'
+        upload_message += '\n--------------------------\nOutput files for this run:\n\n'
 
         upload_message += "All checkM results of this run are saved in :" + result_folder
 
