@@ -181,7 +181,8 @@ class kb_MsuiteTest(unittest.TestCase):
             'bin_folder': bin_folder,
             'out_folder': out_folder,
             'plot_folder': plot_folder,
-            'checkM_cmd_name': 'bin_qa_plot',
+            'checkM_cmd_name': 'marker_plot',
+            #'checkM_cmd_name': 'bin_qa_plot',
             'workspace_name': self.getWsName()
         }
         result = self.getImpl().run_checkM(self.getContext(), input_params)[0]
