@@ -197,7 +197,7 @@ reference genomes and the exact percentile plotted is provided as an argument to
             'dist_value': dist_value,
             'checkM_cmd_name': 'gc_plot'
         })
-	self._run_command(command)
+        self._run_command(command)
 
     def _coding_plot(self, out_folder, bin_folder, plot_folder, dist_value=95):
         """
@@ -215,7 +215,7 @@ sequences within a genome bin
             'dist_value': dist_value,
             'checkM_cmd_name': 'coding_plot'
         })
-	self._run_command(command)
+        self._run_command(command)
 
     def _tetra_plot(self, out_folder, bin_folder, plot_folder, tetra_profile, dist_value=95):
         """
@@ -237,7 +237,7 @@ sequences within the genome bins. This file can be creates with the ‘tetra’ 
             'dist_value': dist_value,
             'checkM_cmd_name': 'tetra_plot'
         })
-	self._run_command(command)
+        self._run_command(command)
 
 
     def _dist_plot(self, out_folder, bin_folder, plot_folder, tetra_profile, dist_value=95):
@@ -258,7 +258,7 @@ the genome bins. This file can be created with the ‘tetra’ command.
             'dist_value': dist_value,
             'checkm_cmd_name': 'dist_plot'
         })
-	self._run_command(command)
+        self._run_command(command)
 
 
     def _nx_plot(self, bin_folder, plot_folder):
@@ -275,7 +275,7 @@ more comprehensive view of the quality of an assembly than simply considering N5
             'plot_folder': plot_folder,
             'checkM_cmd_name': 'nx_plot'
         })
-	self._run_command(command)
+        self._run_command(command)
 
 
     def _len_plot(self, bin_folder, plot_folder):
@@ -293,7 +293,7 @@ assembled genome.
             'plot_folder': plot_folder,
             'checkm_cmd_name': 'len_plot'
         })
-	self._run_command(command)
+        self._run_command(command)
 
 
     def _len_hist(self, bin_folder, plot_folder):
@@ -311,7 +311,7 @@ assembled genome.
             'plot_folder': plot_folder,
             'checkm_cmd_name': 'len_hist'
         })
-	self._run_command(command)
+        self._run_command(command)
 
 
     def _marker_plot(self, out_folder, bin_folder, plot_folder):
@@ -331,7 +331,7 @@ Sequences without any marker genes are not shown.
             'out_folder': out_folder,
             'checkm_cmd_name': 'marker_plot'
         })
-	self._run_command(command)
+        self._run_command(command)
 
 
     def _par_plot(self, out_folder, bin_folder, plot_folder, coverage_file):
@@ -356,7 +356,7 @@ the ‘coverage’ command.
             'coverage_file': coverage_file,
             'checkm_cmd_name': 'par_plot'
         })
-	self._run_command(command)
+        self._run_command(command)
 
 
     def _cov_pca(self, bin_folder, plot_folder, coverage_file):
@@ -375,9 +375,9 @@ sequences within the genome bins. This file can be creates with the ‘coverage�
             'coverage_file': coverage_file,
             'checkm_cmd_name': 'cov_pca'
         })
-	self._run_command(command)
+        self._run_command(command)
 
-    def _tetra_pca(self,  bin_folder, plot_folder, tetra_profile):
+    def _tetra_pca(self, bin_folder, plot_folder, tetra_profile):
         """
         PCA plot of tetranucleotide signatures.
 
@@ -393,7 +393,7 @@ signature of all sequences within the genome bins. This file can be creates with
             'tetra_profile': tetra_profile,
             'checkm_cmd_name': 'tetra_pca'
         })
-	self._run_command(command)
+        self._run_command(command)
 
     def _generate_command(self, params):
         """
