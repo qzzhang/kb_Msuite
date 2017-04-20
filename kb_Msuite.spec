@@ -30,6 +30,7 @@ module kb_Msuite {
         optional params:
         file_extension: the extension of the putative genome file, should be "fna"
         thread: number of threads; default 1
+        reduced_tree: if set to 1, run checkM with the reduced_tree flag, which will keep memory limited to less than 16gb
     */
     typedef structure {
         string bin_folder;
@@ -39,6 +40,7 @@ module kb_Msuite {
 
         string file_extension;
         int thread;
+        boolean reduced_tree;
     } CheckMInputParams;
 
     /*
@@ -64,6 +66,10 @@ module kb_Msuite {
     typedef structure {
         string input_ref;
         string workspace_name;
+
+
+        boolean save_output_dir;
+        boolean save_plots_dir;
     } CheckMLineageWfParams;
 
     typedef structure {

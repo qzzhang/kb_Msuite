@@ -6,15 +6,19 @@ import uuid
 import errno
 import subprocess
 import sys
-import re
-import sys
+import shutil
+
+from pprint import pprint
 
 from KBaseReport.KBaseReportClient import KBaseReport
-#from MetagenomeUtils.MetagenomeUtilsClient import MetagenomeUtils
+from DataFileUtil.DataFileUtilClient import DataFileUtil
+
+from kb_Msuite.Utils.DataStagingUtils import DataStagingUtils
 
 def log(message, prefix_newline=False):
     """Logging function, provides a hook to suppress or redirect log messages."""
     print(('\n' if prefix_newline else '') + '{0:.2f}'.format(time.time()) + ': ' + str(message))
+    sys.stdout.flush()
 
 
 
@@ -350,13 +354,11 @@ signature of all sequences within the genome bins. This file can be creates with
             if(cmd_name == 'bin_qa_plot'):
                 command.append(params.get('out_folder'))
                 command.append(params.get('bin_folder'))
-                command.append(params.get('plot_folder'))
+                command.append(params.get('plots_folder'))
 
         else:
             command = 'Invalid checkM command'
 
-
-        log('Generated checmM command: ' + ' '.join(command))
 
         return command
 
@@ -364,8 +366,7 @@ signature of all sequences within the genome bins. This file can be creates with
         """
         _run_command: run command and print result
         """
-        log('Start executing command: ' + ' '.join(command))
-        sys.stdout.flush()
+        log('Running: ' + ' '.join(command))
 
         p = subprocess.Popen(command, cwd=self.scratch, shell=False)
         exitCode = p.wait()
@@ -415,9 +416,9 @@ signature of all sequences within the genome bins. This file can be creates with
 
 
     def __init__(self, config):
+        self.config = config
         self.callback_url = config['SDK_CALLBACK_URL']
         self.scratch = config['scratch']
-        self.shock_url = config['shock-url']
 
     def run_checkM(self, params):
         """
@@ -456,3 +457,148 @@ signature of all sequences within the genome bins. This file can be creates with
         returnVal.update(reportVal)
 
         return returnVal
+
+
+
+
+
+    def package_folder(self, folder_path, zip_file_name, zip_file_description):
+        dfu = DataFileUtil(self.callback_url)
+        output = dfu.file_to_shock({'file_path': folder_path,
+                                    'make_handle': 0,
+                                    'pack': 'zip'})
+        return {'shock_id': output['shock_id'],
+                'name': zip_file_name,
+                'description': zip_file_description}
+
+
+
+    def copy_no_error(self, src_folder, filename, dest_folder):
+        src = os.path.join(src_folder, filename)
+        dest = os.path.join(dest_folder, filename)
+        log('copying ' + src + ' to ' + dest)
+        try:
+            shutil.copy(src, dest)
+        except:
+            # TODO: add error message reporting
+            log('copy failed')
+
+
+
+    def build_critical_output(self, output_folder):
+        crit_out_dir = os.path.join(self.scratch, 'critical_output_' + str(uuid.uuid4()))
+        os.makedirs(crit_out_dir)
+
+        self.copy_no_error(output_folder, 'lineage.ms', crit_out_dir)
+        self.copy_no_error(output_folder, os.path.join('storage', 'bin_stats.analyze.tsv'), crit_out_dir)
+        self.copy_no_error(output_folder, os.path.join('storage', 'bin_stats.tree.tsv'), crit_out_dir)
+        self.copy_no_error(output_folder, os.path.join('storage', 'bin_stats_ext.tsv'), crit_out_dir)
+        self.copy_no_error(output_folder, os.path.join('storage', 'marker_gene_stats.tsv'), crit_out_dir)
+
+        self.copy_no_error(output_folder, os.path.join('storage', 'tree', 'concatenated.tre'), crit_out_dir)
+
+        return self.package_folder(crit_out_dir, 'selected_output.zip', 'Selected output files from the CheckM analysis.')
+
+
+
+    def build_html_output(self, plots_folder, output_folder, object_name):
+        html_dir = os.path.join(self.scratch, 'html_' + str(uuid.uuid4()))
+        os.makedirs(html_dir)
+
+        # move plots we need into the html directory
+        plot_name = 'bin_qa_plot.png'
+        shutil.copy(os.path.join(plots_folder, plot_name), os.path.join(html_dir, plot_name))
+
+
+        # write the report
+        html = open(os.path.join(html_dir, 'report.html'), 'w')
+        html.write('<html><head><title>CheckM Report for ' + object_name + '</title></head>\n')
+        html.write('<body>\n')
+
+        html.write('<img src="' + plot_name + '" width="90%" />')
+
+        html.write('</body></html>\n')
+        html.close()
+
+        return self.package_folder(html_dir, 'report.html', 'Assembled report from CheckM')
+
+
+
+    def run_checkM_lineage_wf(self, params):
+        '''
+        Main entry point for running the lineage_wf as a KBase App
+        '''
+
+        if 'input_ref' not in params:
+            raise ValueError('input_ref field was not set in params for run_checkM_lineage_wf')
+        if 'workspace_name' not in params:
+            raise ValueError('workspace_name field was not set in params for run_checkM_lineage_wf')
+
+
+        # 1) stage input data
+        dsu = DataStagingUtils(self.config)
+        input_dir = dsu.stage_input(params['input_ref'], 'fna')
+        output_dir = os.path.join(self.scratch, 'output_' + os.path.basename(input_dir['input_dir']))
+        plots_dir = os.path.join(self.scratch, 'plot_' + os.path.basename(input_dir['input_dir']))
+        log('Staged input directory: ' + input_dir['input_dir'])
+
+
+        # 2) run the lineage workflow
+        checkM_params = {'bin_folder': input_dir['input_dir'],
+                         'out_folder': output_dir,
+                         'checkM_cmd_name': 'lineage_wf',
+                         'thread': 2,
+                         'reduced_tree': 1
+                         }
+        lineage_wf_cmd = self._generate_command(checkM_params)
+        self._run_command(lineage_wf_cmd)
+
+
+        # 3) build the plots
+        checkM_plot_params = {'bin_folder': input_dir['input_dir'],
+                              'out_folder': output_dir,
+                              'plots_folder': plots_dir,
+                              'checkM_cmd_name': 'bin_qa_plot'
+                              }
+        bin_qa_plot_cmd = self._generate_command(checkM_plot_params)
+        self._run_command(bin_qa_plot_cmd)
+
+
+        # 4) package download files
+        direct_download_files = []
+        if 'save_output_dir' in params and str(params['save_output_dir']) == '1':
+            log('packaging full output directory')
+
+            zipped_output_file = self.package_folder(output_dir, 'full_output.zip', 'Full output of CheckM')
+            direct_download_files.append(zipped_output_file)
+        else:
+            log('not packaging full output directory, selecting specific files')
+            direct_download_files.append(self.build_critical_output(output_dir))
+
+        if 'save_plots_dir' in params and str(params['save_plots_dir']) == '1':
+            log('packaging output plots directory')
+            zipped_output_file = self.package_folder(plots_dir, 'plots.zip', 'Output plots from CheckM')
+            direct_download_files.append(zipped_output_file)
+        else:
+            log('not packaging output plots directory')
+
+
+        # 5) build the HTML report
+        html_zip = self.build_html_output(plots_dir, output_dir, params['input_ref'])
+
+
+        # 6) save report
+        report_params = {'message': '',
+                         'direct_html_link_index': 0,
+                         'html_links': [html_zip],
+                         'file_links': direct_download_files,
+                         'report_object_name': 'kb_checkM_report_' + str(uuid.uuid4()),
+                         'workspace_name': params['workspace_name']
+                         }
+
+        kr = KBaseReport(self.callback_url)
+        report_output = kr.create_extended_report(report_params)
+
+        return {'report_name': report_output['name'],
+                'report_ref': report_output['ref']}
+

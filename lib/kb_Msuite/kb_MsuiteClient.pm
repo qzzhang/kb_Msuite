@@ -137,6 +137,8 @@ CheckMInputParams is a reference to a hash where the following keys are defined:
 	workspace_name has a value which is a string
 	file_extension has a value which is a string
 	thread has a value which is an int
+	reduced_tree has a value which is a kb_Msuite.boolean
+boolean is an int
 CheckMResults is a reference to a hash where the following keys are defined:
 	checkM_results_folder has a value which is a string
 	report_name has a value which is a string
@@ -157,6 +159,8 @@ CheckMInputParams is a reference to a hash where the following keys are defined:
 	workspace_name has a value which is a string
 	file_extension has a value which is a string
 	thread has a value which is an int
+	reduced_tree has a value which is a kb_Msuite.boolean
+boolean is an int
 CheckMResults is a reference to a hash where the following keys are defined:
 	checkM_results_folder has a value which is a string
 	report_name has a value which is a string
@@ -237,6 +241,9 @@ $result is a kb_Msuite.CheckMLineageWfResult
 CheckMLineageWfParams is a reference to a hash where the following keys are defined:
 	input_ref has a value which is a string
 	workspace_name has a value which is a string
+	save_output_dir has a value which is a kb_Msuite.boolean
+	save_plots_dir has a value which is a kb_Msuite.boolean
+boolean is an int
 CheckMLineageWfResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a string
@@ -252,6 +259,9 @@ $result is a kb_Msuite.CheckMLineageWfResult
 CheckMLineageWfParams is a reference to a hash where the following keys are defined:
 	input_ref has a value which is a string
 	workspace_name has a value which is a string
+	save_output_dir has a value which is a kb_Msuite.boolean
+	save_plots_dir has a value which is a kb_Msuite.boolean
+boolean is an int
 CheckMLineageWfResult is a reference to a hash where the following keys are defined:
 	report_name has a value which is a string
 	report_ref has a value which is a string
@@ -477,6 +487,7 @@ workspace_name: the name of the workspace it gets saved to.
 optional params:
 file_extension: the extension of the putative genome file, should be "fna"
 thread: number of threads; default 1
+reduced_tree: if set to 1, run checkM with the reduced_tree flag, which will keep memory limited to less than 16gb
 
 
 =item Definition
@@ -491,6 +502,7 @@ checkM_cmd_name has a value which is a string
 workspace_name has a value which is a string
 file_extension has a value which is a string
 thread has a value which is an int
+reduced_tree has a value which is a kb_Msuite.boolean
 
 </pre>
 
@@ -505,6 +517,7 @@ checkM_cmd_name has a value which is a string
 workspace_name has a value which is a string
 file_extension has a value which is a string
 thread has a value which is an int
+reduced_tree has a value which is a kb_Msuite.boolean
 
 
 =end text
@@ -574,6 +587,8 @@ input_ref - reference to the input Assembly or BinnedContigs data
 a reference to a hash where the following keys are defined:
 input_ref has a value which is a string
 workspace_name has a value which is a string
+save_output_dir has a value which is a kb_Msuite.boolean
+save_plots_dir has a value which is a kb_Msuite.boolean
 
 </pre>
 
@@ -584,6 +599,8 @@ workspace_name has a value which is a string
 a reference to a hash where the following keys are defined:
 input_ref has a value which is a string
 workspace_name has a value which is a string
+save_output_dir has a value which is a kb_Msuite.boolean
+save_plots_dir has a value which is a kb_Msuite.boolean
 
 
 =end text

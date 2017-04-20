@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * optional params:
  * file_extension: the extension of the putative genome file, should be "fna"
  * thread: number of threads; default 1
+ * reduced_tree: if set to 1, run checkM with the reduced_tree flag, which will keep memory limited to less than 16gb
  * </pre>
  * 
  */
@@ -33,7 +34,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "checkM_cmd_name",
     "workspace_name",
     "file_extension",
-    "thread"
+    "thread",
+    "reduced_tree"
 })
 public class CheckMInputParams {
 
@@ -49,6 +51,8 @@ public class CheckMInputParams {
     private String fileExtension;
     @JsonProperty("thread")
     private Long thread;
+    @JsonProperty("reduced_tree")
+    private Long reducedTree;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("bin_folder")
@@ -141,6 +145,21 @@ public class CheckMInputParams {
         return this;
     }
 
+    @JsonProperty("reduced_tree")
+    public Long getReducedTree() {
+        return reducedTree;
+    }
+
+    @JsonProperty("reduced_tree")
+    public void setReducedTree(Long reducedTree) {
+        this.reducedTree = reducedTree;
+    }
+
+    public CheckMInputParams withReducedTree(Long reducedTree) {
+        this.reducedTree = reducedTree;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -153,7 +172,7 @@ public class CheckMInputParams {
 
     @Override
     public String toString() {
-        return ((((((((((((((("CheckMInputParams"+" [binFolder=")+ binFolder)+", outFolder=")+ outFolder)+", checkMCmdName=")+ checkMCmdName)+", workspaceName=")+ workspaceName)+", fileExtension=")+ fileExtension)+", thread=")+ thread)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((("CheckMInputParams"+" [binFolder=")+ binFolder)+", outFolder=")+ outFolder)+", checkMCmdName=")+ checkMCmdName)+", workspaceName=")+ workspaceName)+", fileExtension=")+ fileExtension)+", thread=")+ thread)+", reducedTree=")+ reducedTree)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
