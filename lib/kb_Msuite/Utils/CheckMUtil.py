@@ -160,7 +160,7 @@ red. A gene present 3 or more times may have pairs with an AAI ≥90% and pairs 
         self._run_command(command)
 
 
-    def _gc_plot(self, bin_folder, plot_folder, dist_value):
+    def _gc_plot(self, bin_folder, plot_folder, dist_value=95):
         """
         Create GC histogram and delta-GC plot.
 
@@ -188,9 +188,18 @@ reference genomes and the exact percentile plotted is provided as an argument to
           w, --gc_window_size GC_WINDOW_SIZE--window size used to calculate GC histogram (default: 5000)
           b, --gc_bin_width GC_BIN_WIDTH--width of GC bars in histogram (default: 0.01)
           q, --quiet--suppress console output
+        
+          Example: checkm gc_plot ./bins ./plots 95
         """
+        command = self._generate_command({
+            'bin_folder': bin_folder,
+            'plot_folder': plot_folder,
+            'dist_value': dist_value,
+            'checkM_cmd_name': 'gc_plot'
+        })
+	self._run_command(command)
 
-    def _coding_plot(self, out_folder, bin_folder, plot_folder, dist_value):
+    def _coding_plot(self, out_folder, bin_folder, plot_folder, dist_value=95):
         """
         Create coding density (CD) histogram and delta-CD plot.
 
@@ -199,8 +208,16 @@ sequences within a genome bin
 
         Example: checkm coding_plot ./output ./bins ./plots 95
         """
+        command = self._generate_command({
+            'bin_folder': bin_folder,
+            'out_folder': out_folder,
+            'plot_folder': plot_folder,
+            'dist_value': dist_value,
+            'checkM_cmd_name': 'coding_plot'
+        })
+	self._run_command(command)
 
-    def _tetra_plot(self, out_folder, bin_folder, plot_folder, tetra_profile):
+    def _tetra_plot(self, out_folder, bin_folder, plot_folder, tetra_profile, dist_value=95):
         """
         Create tetranucleotide distance (TD) histogram and delta-TD plot.
 
@@ -212,18 +229,36 @@ sequences within the genome bins. This file can be creates with the ‘tetra’ 
 
         Example: checkm tetra_plot ./output ./bins ./plots tetra.tsv 95
         """
+        command = self._generate_command({
+            'bin_folder': bin_folder,
+            'out_folder': out_folder,
+            'plot_folder': plot_folder,
+            'tetra_profile': tetra_profile,
+            'dist_value': dist_value,
+            'checkM_cmd_name': 'tetra_plot'
+        })
+	self._run_command(command)
 
 
-    def _dist_plot(self, out_folder, bin_folder, plot_folder, tetra_profile, dist_value):
+    def _dist_plot(self, out_folder, bin_folder, plot_folder, tetra_profile, dist_value=95):
         """
         Create image with GC, CD, and TD distribution plots together.
 
         Produces a single figure combining the plots produced by gc_plot, coding_plot, and
 tetra_plot. This plot requires a file indicating the tetranucleotide signature of all sequences within
-the genome bins. This file can be creates with the ‘tetra’ command.
+the genome bins. This file can be created with the ‘tetra’ command.
 
         Example: checkm dist_plot ./output ./bins ./plots tetra.tsv 95
         """
+        command = self._generate_command({
+            'bin_folder': bin_folder,
+            'out_folder': out_folder,
+            'plot_folder': plot_folder,
+            'tetra_profile': tetra_profile,
+            'dist_value': dist_value,
+            'checkm_cmd_name': 'dist_plot'
+        })
+	self._run_command(command)
 
 
     def _nx_plot(self, bin_folder, plot_folder):
@@ -235,6 +270,12 @@ more comprehensive view of the quality of an assembly than simply considering N5
         
         Example: checkm nx_plot ./bins ./plots
         """
+        command = self._generate_command({
+            'bin_folder': bin_folder,
+            'plot_folder': plot_folder,
+            'checkM_cmd_name': 'nx_plot'
+        })
+	self._run_command(command)
 
 
     def _len_plot(self, bin_folder, plot_folder):
@@ -247,6 +288,12 @@ assembled genome.
 
         Example: checkm len_plot ./bins ./plots
         """
+        command = self._generate_command({
+            'bin_folder': bin_folder,
+            'plot_folder': plot_folder,
+            'checkm_cmd_name': 'len_plot'
+        })
+	self._run_command(command)
 
 
     def _len_hist(self, bin_folder, plot_folder):
@@ -259,6 +306,12 @@ assembled genome.
 
         Example: checkm len_hist ./bins ./plots
         """
+        command = self._generate_command({
+            'bin_folder': bin_folder,
+            'plot_folder': plot_folder,
+            'checkm_cmd_name': 'len_hist'
+        })
+	self._run_command(command)
 
 
     def _marker_plot(self, out_folder, bin_folder, plot_folder):
@@ -272,6 +325,13 @@ Sequences without any marker genes are not shown.
 
         Example: checkm marker_plot ./output ./bins ./plots
         """
+        command = self._generate_command({
+            'plot_folder': plot_folder,
+            'bin_folder': bin_folder,
+            'out_folder': out_folder,
+            'checkm_cmd_name': 'marker_plot'
+        })
+	self._run_command(command)
 
 
     def _par_plot(self, out_folder, bin_folder, plot_folder, coverage_file):
@@ -289,6 +349,14 @@ the ‘coverage’ command.
 
         Example: checkm par_plot ./output ./bins ./plots coverage.tsv
         """
+        command = self._generate_command({
+            'bin_folder': bin_folder,
+            'out_folder': out_folder,
+            'plot_folder': plot_folder,
+            'coverage_file': coverage_file,
+            'checkm_cmd_name': 'par_plot'
+        })
+	self._run_command(command)
 
 
     def _cov_pca(self, bin_folder, plot_folder, coverage_file):
@@ -301,7 +369,13 @@ sequences within the genome bins. This file can be creates with the ‘coverage�
 
         Example: checkm cov_pca ./bins ./plots coverate.tsv
         """
-
+        command = self._generate_command({
+            'bin_folder': bin_folder,
+            'plot_folder': plot_folder,
+            'coverage_file': coverage_file,
+            'checkm_cmd_name': 'cov_pca'
+        })
+	self._run_command(command)
 
     def _tetra_pca(self,  bin_folder, plot_folder, tetra_profile):
         """
@@ -313,6 +387,13 @@ signature of all sequences within the genome bins. This file can be creates with
 
         Example: checkm tetra_pca ./bins ./plots tetra.tsv
         """
+        command = self._generate_command({
+            'bin_folder': bin_folder,
+            'plot_folder': plot_folder,
+            'tetra_profile': tetra_profile,
+            'checkm_cmd_name': 'tetra_pca'
+        })
+	self._run_command(command)
 
     def _generate_command(self, params):
         """
@@ -356,8 +437,98 @@ signature of all sequences within the genome bins. This file can be creates with
                 command.append(params.get('bin_folder'))
                 command.append(params.get('plots_folder'))
 
+            """ The gc_plot command
+                Example: checkm gc_plot ./bins ./plots 95
+            """
+            if(cmd_name == 'gc_plot'):
+                command += ' {}' . format(params.get('bin_folder'))
+                command += ' {}' . format(params.get('plot_folder'))
+                command += ' {}' . format(params.get('dist_value'))
+
+            """ The coding_plot command
+                Example: checkm coding_plot ./output ./bins ./plots 95
+            """
+            if(cmd_name == 'coding_plot'):
+                command += ' {}' . format(params.get('out_folder'))
+                command += ' {}' . format(params.get('bin_folder'))
+                command += ' {}' . format(params.get('plot_folder'))
+                command += ' {}' . format(params.get('dist_value'))
+
+            """ The tetra_plot command
+                Example: checkm tetra_plot ./output ./bins ./plots tetra.tsv 95
+            """
+            if(cmd_name == 'tetra_plot'):
+                command += ' {}' . format(params.get('out_folder'))
+                command += ' {}' . format(params.get('bin_folder'))
+                command += ' {}' . format(params.get('plot_folder'))
+                command += ' {}' . format(params.get('tetra_profile'))
+                command += ' {}' . format(params.get('dist_value'))
+
+            """ The dist_plot command
+                Example: checkm dist_plot ./output ./bins ./plots tetra.tsv 95
+            """
+            if(cmd_name == 'dist_plot'):
+                command += ' {}' . format(params.get('out_folder'))
+                command += ' {}' . format(params.get('bin_folder'))
+                command += ' {}' . format(params.get('plot_folder'))
+                command += ' {}' . format(params.get('tetra_profile'))
+                command += ' {}' . format(params.get('dist_value'))
+
+            """ The nx_plot command
+                Example: checkm nx_plot ./bins ./plots
+            """
+            if(cmd_name == 'nx_plot'):
+                command += ' {}' . format(params.get('bin_folder'))
+                command += ' {}' . format(params.get('plot_folder'))
+
+            """ The len_plot command
+                Example: checkm len_plot ./bins ./plots
+            """
+            if(cmd_name == 'len_plot'):
+                command += ' {}' . format(params.get('bin_folder'))
+                command += ' {}' . format(params.get('plot_folder'))
+
+            """ The len_hist command
+                Example: checkm len_hist ./bins ./plots
+            """
+            if(cmd_name == 'len_hist'):
+                command += ' {}' . format(params.get('bin_folder'))
+                command += ' {}' . format(params.get('plot_folder'))
+
+            """ The marker_plot command
+                Example: checkm marker_plot ./output ./bins ./plots
+            """
+            if(cmd_name == 'marker_plot'):
+                command += ' {}' . format(params.get('out_folder'))
+                command += ' {}' . format(params.get('bin_folder'))
+                command += ' {}' . format(params.get('plot_folder'))
+
+            """ The par_plot command
+                Example: checkm par_plot ./output ./bins ./plots coverage.tsv
+            """
+            if(cmd_name == 'par_plot'):
+                command += ' {}' . format(params.get('out_folder'))
+                command += ' {}' . format(params.get('bin_folder'))
+                command += ' {}' . format(params.get('plot_folder'))
+                command += ' {}' . format(params.get('coverage_file'))
+
+            """ The cov_pca command
+                Example: checkm cov_pca ./bins ./plots coverage.tsv
+            """
+            if(cmd_name == 'cov_pca'):
+                command += ' {}' . format(params.get('bin_folder'))
+                command += ' {}' . format(params.get('plot_folder'))
+                command += ' {}' . format(params.get('coverage_file'))
+
+            """ The tetra_pca command
+                Example: checkm tetra_pca ./bins ./plots tetra.tsv
+            """
+            if(cmd_name == 'tetra_pca'):
+                command += ' {}' . format(params.get('bin_folder'))
+                command += ' {}' . format(params.get('plot_folder'))
+                command += ' {}' . format(params.get('tetra_profile'))
         else:
-            command = 'Invalid checkM command'
+            command = 'Unrecognizable checkM command'
 
 
         return command
