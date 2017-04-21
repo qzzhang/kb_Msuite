@@ -7,6 +7,7 @@ import errno
 import subprocess
 import sys
 import shutil
+import ast
 
 from pprint import pprint
 
@@ -661,14 +662,70 @@ signature of all sequences within the genome bins. This file can be creates with
         os.makedirs(crit_out_dir)
 
         self.copy_no_error(output_folder, 'lineage.ms', crit_out_dir)
+
+        os.makedirs(os.path.join(crit_out_dir, 'storage'))
         self.copy_no_error(output_folder, os.path.join('storage', 'bin_stats.analyze.tsv'), crit_out_dir)
         self.copy_no_error(output_folder, os.path.join('storage', 'bin_stats.tree.tsv'), crit_out_dir)
         self.copy_no_error(output_folder, os.path.join('storage', 'bin_stats_ext.tsv'), crit_out_dir)
         self.copy_no_error(output_folder, os.path.join('storage', 'marker_gene_stats.tsv'), crit_out_dir)
-
         self.copy_no_error(output_folder, os.path.join('storage', 'tree', 'concatenated.tre'), crit_out_dir)
 
         return self.package_folder(crit_out_dir, 'selected_output.zip', 'Selected output files from the CheckM analysis.')
+
+
+
+    def build_summary_table(self, output_folder, html):
+
+        stats_file = os.path.join(output_folder, 'storage', 'bin_stats_ext.tsv')
+        if not os.path.isfile(stats_file):
+            log('Warning! no stats file found (looking at: ' + stats_file + ')')
+            return
+
+        bin_stats = []
+        with open(stats_file) as lf:
+            for line in lf:
+                if not line:
+                    continue
+                if line.startswith('#'):
+                    continue
+                col = line.split('\t')
+                bin_id = col[0]
+                data = ast.literal_eval(col[1])
+                bin_stats.append({'bid': bin_id, 'data': data})
+
+
+        fields = [{'id': 'marker lineage', 'display': 'Marker Lineage'},
+                  {'id': '# genomes', 'display': '# Genomes'},
+                  {'id': '# markers', 'display': '# Markers'},
+                  {'id': '# marker sets', 'display': '# Marker Sets'},
+                  {'id': '0', 'display': '0'},
+                  {'id': '1', 'display': '1'},
+                  {'id': '2', 'display': '2'},
+                  {'id': '3', 'display': '3'},
+                  {'id': '4', 'display': '4'},
+                  {'id': '5+', 'display': '5+'},
+                  {'id': 'Completeness', 'display': 'Completeness'},
+                  {'id': 'Contamination', 'display': 'Contamination'}]
+
+        # header
+        tdStyle = ' style="border: 1px solid black; text-align: left; padding: 8px;"'
+        tableStyle = ' style="border: 1px solid black; border-collapse: collapse"'
+
+        html.write('<table' + tableStyle + '>\n')
+        html.write('  <tr>\n')
+        html.write('    <th' + tdStyle + '><b>Bin Name</b></th>\n')
+        for f in fields:
+            html.write('    <th' + tdStyle + '>' + f['display'] + '</th>\n')
+        html.write('  </tr>\n')
+
+        for b in bin_stats:
+            html.write('  <tr>\n')
+            html.write('    <td' + tdStyle + '>' + b['bid'] + '</td>\n')
+            for f in fields:
+                html.write('    <td' + tdStyle + '>' + str(b['data'][f['id']]) + '</td>\n')
+            html.write('  </tr>\n')
+
+        html.write('</table>\n')
 
 
 
@@ -686,7 +743,13 @@ signature of all sequences within the genome bins. This file can be creates with
         html.write('<html><head><title>CheckM Report for ' + object_name + '</title></head>\n')
         html.write('<body>\n')
 
+        # include the single main summary figure
         html.write('<img src="' + plot_name + '" width="90%" />')
+
+        html.write('<br><br><br>')
+
+        # print out the info table
+        self.build_summary_table(output_folder, html)
 
         html.write('</body></html>\n')
         html.close()
