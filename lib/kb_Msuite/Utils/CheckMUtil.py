@@ -104,18 +104,22 @@ class CheckMUtil:
         self.run_checkM('bin_qa_plot', bin_qa_plot_options)
 
         # compute tetranucleotide frequencies based on the concatenated fasta file
+        log('Computing tetranucleotide distributions...')
         tetra_options = {'seq_file': all_seq_fasta_file,
                          'tetra_file': tetra_file,
                          'thread': self.threads,
+                         'quiet': 1
                          }
         self.run_checkM('tetra', tetra_options)
 
         # plot distributions for each bin
+        log('Creating distribution plots per bin...')
         dist_plot_options = {'bin_folder': bin_folder,
                              'out_folder': out_folder,
                              'plots_folder': plots_folder,
                              'tetra_file': tetra_file,
                              'dist_value': 95,
+                             'quiet': 1
                              }
         self.run_checkM('dist_plot', dist_plot_options)
 
@@ -139,6 +143,9 @@ class CheckMUtil:
         if options.get('thread'):
             command_list.append('-t')
             command_list.append(str(options.get('thread')))
+
+        if options.get('quiet') and str(options.get('quiet')) == '1':
+            command_list.append('-q')
 
 
     def _validate_options(self, options,

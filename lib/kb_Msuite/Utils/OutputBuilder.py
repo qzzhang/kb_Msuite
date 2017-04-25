@@ -25,6 +25,8 @@ class OutputBuilder(object):
         self.scratch = scratch_dir
         self.callback_url = callback_url
 
+        self.DIST_PLOT_EXT = '.ref_dist_plots.png'
+
 
     def package_folder(self, folder_path, zip_file_name, zip_file_description):
         ''' Simple utility for packaging a folder and saving to shock '''
@@ -60,6 +62,7 @@ class OutputBuilder(object):
         # move plots we need into the html directory
         plot_name = 'bin_qa_plot.png'
         shutil.copy(os.path.join(self.plots_dir, plot_name), os.path.join(html_dir, plot_name))
+        self._copy_ref_dist_plots(self.plots_dir, html_dir)
 
         # write the html report to file
         html = open(os.path.join(html_dir, 'report.html'), 'w')
@@ -73,7 +76,7 @@ class OutputBuilder(object):
         html.write('<br><br><br>\n')
 
         # print out the info table
-        self.build_summary_table(html)
+        self.build_summary_table(html, html_dir)
 
         html.write('</body>\n</html>\n')
         html.close()
@@ -81,7 +84,7 @@ class OutputBuilder(object):
         return self.package_folder(html_dir, 'report.html', 'Assembled report from CheckM')
 
 
-    def build_summary_table(self, html):
+    def build_summary_table(self, html, html_dir):
 
         stats_file = os.path.join(self.output_dir, 'storage', 'bin_stats_ext.tsv')
         if not os.path.isfile(stats_file):
@@ -123,7 +126,12 @@ class OutputBuilder(object):
 
         for b in bin_stats:
             html.write('  <tr>\n')
-            html.write('    <td>' + b['bid'] + '</td>\n')
+            dist_plot_file = os.path.join(html_dir, str(b['bid']) + self.DIST_PLOT_EXT)
+            if os.path.isfile(dist_plot_file):
+                self._write_dist_html_page(html_dir, b['bid'])
+                html.write('    <td><a href="' + b['bid'] + '.html">' + b['bid'] + '</td>\n')
+            else:
+                html.write('    <td>' + b['bid'] + '</td>\n')
             for f in fields:
                 if f['id'] in b['data']:
                     value = str(b['data'][f['id']])
@@ -145,6 +153,14 @@ class OutputBuilder(object):
 
         style = '''
         <style style="text/css">
+            a {
+                color: #337ab7;
+            }
+
+            a:hover {
+                color: #23527c;
+            }
+
             table {
                 border: 1px solid #bbb;
                 border-collapse: collapse;
@@ -168,7 +184,6 @@ class OutputBuilder(object):
         html.write(style)
         html.write('</head>\n')
 
-
     def _copy_file_ignore_errors(self, filename, src_folder, dest_folder):
         src = os.path.join(src_folder, filename)
         dest = os.path.join(dest_folder, filename)
@@ -178,3 +193,33 @@ class OutputBuilder(object):
         except:
             # TODO: add error message reporting
             log('copy failed')
+
+
+    def _write_dist_html_page(self, html_dir, bin_id):
+
+        # write the html report to file
+        html = open(os.path.join(html_dir, bin_id + '.html'), 'w')
+
+        html.write('<html>\n')
+        html.write('<head>\n')
+        html.write('<title>CheckM Dist Plots for Bin' + bin_id + '</title>')
+        html.write('<style style="text/css">\n a { color: #337ab7; } \n a:hover { color: #23527c; }\n</style>\n')
+        html.write('<body>\n')
+        html.write('<br><a href="report.html">Back to summary</a><br>\n')
+        html.write('<center><h2>Bin: ' + bin_id + '</h2></center>\n')
+        html.write('<img src="' + bin_id + self.DIST_PLOT_EXT + '" width="90%" />\n')
+        html.write('<br><br><br>\n')
+        html.write('</body>\n</html>\n')
+        html.close()
+
+
+    def _copy_ref_dist_plots(self, plots_dir, dest_folder):
+        for plotfile in os.listdir(plots_dir):
+            plot_file_path = os.path.join(plots_dir, plotfile)
+            if os.path.isfile(plot_file_path) and plotfile.endswith(self.DIST_PLOT_EXT):
+                try:
+                    shutil.copy(os.path.join(plots_dir, plotfile),
+                                os.path.join(dest_folder, plotfile))
+                except:
+                    # TODO: add error message reporting
+                    log('copy of ' + plot_file_path + ' to html directory failed')
