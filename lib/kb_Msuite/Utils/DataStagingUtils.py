@@ -1,13 +1,14 @@
 import os
 import time
-
-
+import glob
+import subprocess
 
 from Workspace.WorkspaceClient import Workspace
 from AssemblyUtil.AssemblyUtilClient import AssemblyUtil
 from MetagenomeUtils.MetagenomeUtilsClient import MetagenomeUtils
 
-class DataStagingUtils:
+
+class DataStagingUtils(object):
 
     def __init__(self, config):
         self.scratch = os.path.abspath(config['scratch'])
@@ -32,7 +33,9 @@ class DataStagingUtils:
             {"input_dir": '...'}
         '''
         # generate a folder in scratch to hold the input
-        input_dir = os.path.join(self.scratch, 'bins_' + str(int(time.time() * 1000)))
+        suffix = str(int(time.time() * 1000))
+        input_dir = os.path.join(self.scratch, 'bins_' + suffix)
+        all_seq_fasta = os.path.join(self.scratch, 'all_sequences_' + suffix + '.' + fasta_file_extension)
 
 
         # 2) based on type, download the files
@@ -71,7 +74,11 @@ class DataStagingUtils:
         else:
             raise ValueError('Cannot stage fasta file input directory from type: ' + type_name)
 
-        return {'input_dir': input_dir}
+
+        # create summary fasta file with all bins
+        self.cat_fasta_files(input_dir, fasta_file_extension, all_seq_fasta)
+
+        return {'input_dir': input_dir, 'folder_suffix': suffix, 'all_seq_fasta': all_seq_fasta}
 
 
     def set_fasta_file_extensions(self, folder, new_extension):
@@ -92,3 +99,20 @@ class DataStagingUtils:
             if file_extension in extensions:
                 os.rename(os.path.join(folder, file),
                           os.path.join(folder, filename + '.' + new_extension))
+
+
+    def cat_fasta_files(self, folder, extension, output_fasta_file):
+        '''
+        Given a folder of fasta files with the specified extension, cat them together
+        using 'cat' into the target new_fasta_file
+        '''
+        files = glob.glob(os.path.join(folder, '*.' + extension))
+        cat_cmd = ['cat'] + files
+        fasta_file_handle = open(output_fasta_file, 'w')
+        p = subprocess.Popen(cat_cmd, cwd=self.scratch, stdout=fasta_file_handle, shell=False)
+        exitCode = p.wait()
+        fasta_file_handle.close()
+
+        if exitCode != 0:
+            raise ValueError('Error running command: ' + ' '.join(cat_cmd) + '\n' +
+                             'Exit Code: ' + str(exitCode))
