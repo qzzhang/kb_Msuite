@@ -73,7 +73,7 @@ class CoreCheckMTest(unittest.TestCase):
         shutil.copytree(os.path.join('data', 'example_out', 'input'), cls.input_dir)
         shutil.copytree(os.path.join('data', 'example_out', 'output'), cls.output_dir)
         shutil.copy(os.path.join('data', 'example_out', 'all_seq.fna'), cls.all_seq_fasta)
-        return
+
         # prepare WS data
         cls.prepare_data()
 
