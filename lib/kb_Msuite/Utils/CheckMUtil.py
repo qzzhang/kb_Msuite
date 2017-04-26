@@ -75,7 +75,7 @@ class CheckMUtil:
         # 5) build the HTML report
         os.makedirs(html_dir)
         outputBuilder.build_html_output_for_lineage_wf(html_dir, params['input_ref'])
-        html_zipped = outputBuilder.package_folder(html_dir, 'plots.zip', 'Output plots from CheckM')
+        html_zipped = outputBuilder.package_folder(html_dir, 'report.html', 'Summarized report from CheckM')
 
 
         # 6) save report
