@@ -172,7 +172,7 @@ class CheckMUtil:
 
         if subcommand == 'lineage_wf':
             self._validate_options(options, checkBin=True, checkOut=True, subcommand='lineage_wf')
-            if 'reduced_tree' in options and options['reduced_tree'] == 1:
+            if 'reduced_tree' in options and str(options['reduced_tree']) == '1':
                 command.append('--reduced_tree')
             command.append(options['bin_folder'])
             command.append(options['out_folder'])
