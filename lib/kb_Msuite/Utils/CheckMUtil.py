@@ -69,7 +69,7 @@ class CheckMUtil:
 
         # 4) Package results
         outputBuilder = OutputBuilder(output_dir, plots_dir, self.scratch, self.callback_url)
-        output_packages = self._build_output_packages(params, outputBuilder)
+        output_packages = self._build_output_packages(params, outputBuilder, input_dir)
 
 
         # 5) build the HTML report
@@ -207,7 +207,7 @@ class CheckMUtil:
         return command
 
 
-    def _build_output_packages(self, params, outputBuilder):
+    def _build_output_packages(self, params, outputBuilder, input_dir):
 
         output_packages = []
 
@@ -218,7 +218,7 @@ class CheckMUtil:
             output_packages.append(zipped_output_file)
         else:
             log('not packaging full output directory, selecting specific files')
-            crit_out_dir = os.path.join(self.scratch, 'critical_output_' + os.path.basename(outputBuilder.input_dir))
+            crit_out_dir = os.path.join(self.scratch, 'critical_output_' + os.path.basename(input_dir))
             os.makedirs(crit_out_dir)
             zipped_output_file = outputBuilder.package_folder(outputBuilder.output_dir, 'selected_output.zip',
                                                               'Selected output from the CheckM analysis')
