@@ -97,11 +97,12 @@ class CheckMUtil:
     def build_checkM_lineage_wf_plots(self, bin_folder, out_folder, plots_folder, all_seq_fasta_file, tetra_file):
 
         # first build generic plot for entire dataset
+        log('Creating basic QA plot (checkm bin_qa_plot) ...')
         bin_qa_plot_options = {'bin_folder': bin_folder,
                                'out_folder': out_folder,
                                'plots_folder': plots_folder
                                }
-        self.run_checkM('bin_qa_plot', bin_qa_plot_options)
+        self.run_checkM('bin_qa_plot', bin_qa_plot_options, dropOutput=True)
 
         # compute tetranucleotide frequencies based on the concatenated fasta file
         log('Computing tetranucleotide distributions...')
@@ -110,7 +111,7 @@ class CheckMUtil:
                          'thread': self.threads,
                          'quiet': 1
                          }
-        self.run_checkM('tetra', tetra_options)
+        self.run_checkM('tetra', tetra_options, dropOutput=True)
 
         # plot distributions for each bin
         log('Creating distribution plots per bin...')
@@ -121,15 +122,38 @@ class CheckMUtil:
                              'dist_value': 95,
                              'quiet': 1
                              }
-        self.run_checkM('dist_plot', dist_plot_options)
+        self.run_checkM('dist_plot', dist_plot_options, dropOutput=True)
 
 
-    def run_checkM(self, subcommand, options):
+    def run_checkM(self, subcommand, options, dropOutput=False):
+        '''
+            subcommand is the checkm subcommand (eg lineage_wf, tetra, bin_qa_plot)
+            options indicate, depending on the subcommand:
+                bin_folder
+                out_folder
+                plots_folder
+                seq_file
+                tetra_file
+
+                reduced_tree
+                thread
+                dist_value
+        '''
         command = self._build_command(subcommand, options)
         log('Running: ' + ' '.join(command))
 
-        p = subprocess.Popen(command, cwd=self.scratch, shell=False)
+        log_output_file = None
+        if dropOutput:
+            # necessary because the checkM --quiet flag doesn't work on the tetra subcommand,
+            # and that produces a line per contig
+            log_output_file = open(os.path.join(self.scratch, subcommand + '.out'), 'w')
+            p = subprocess.Popen(command, cwd=self.scratch, shell=False, stdout=log_output_file, stderr=subprocess.STDOUT)
+        else:
+            p = subprocess.Popen(command, cwd=self.scratch, shell=False)
         exitCode = p.wait()
+
+        if log_output_file:
+            log_output_file.close()
 
         if (exitCode == 0):
             log('Executed command: ' + ' '.join(command) + '\n' +
@@ -145,7 +169,7 @@ class CheckMUtil:
             command_list.append(str(options.get('thread')))
 
         if options.get('quiet') and str(options.get('quiet')) == '1':
-            command_list.append('-q')
+            command_list.append('--quiet')
 
 
     def _validate_options(self, options,

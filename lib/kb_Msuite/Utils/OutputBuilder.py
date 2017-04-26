@@ -114,7 +114,7 @@ class OutputBuilder(object):
                   {'id': '3', 'display': '3'},
                   {'id': '4', 'display': '4'},
                   {'id': '5+', 'display': '5+'},
-                  {'id': 'Completeness', 'display': 'Completeness'},
+                  {'id': 'Completeness', 'display': 'Completeness', 'round': 3},
                   {'id': 'Contamination', 'display': 'Contamination', 'round': 3}]
 
         html.write('<table>\n')
